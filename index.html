@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Mactopus ERP 5.3 — Purchases / Supabase</title>
+<title>Mactopus ERP 5.4 — Purchases Stable / Supabase</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
@@ -47,17 +47,17 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
 <div class="app">
   <aside class="side">
     <div class="brand">Mactopus ERP</div>
-    <div class="sub">Версия 5.3 Purchases/Supabase<br>3 пользователя, все с админским доступом. Полировка интерфейса: аккуратные KPI, статусы, таблицы, мобильная адаптация и сохранение всей текущей бизнес-логики.</div>
+    <div class="sub">Версия 5.4 Purchases Stable/Supabase<br>3 пользователя, все с админским доступом. Полировка интерфейса: аккуратные KPI, статусы, таблицы, мобильная адаптация и сохранение всей текущей бизнес-логики.</div>
     <div class="nav">
       <button class="active" data-tab="dashboard">📊 Дашборд</button>
       <button data-tab="products">📦 Товары</button>
-      <button data-tab="inventory">🏬 Остатки</button>
       <button data-tab="purchases">🧾 Закупки</button>
+      <button data-tab="inventory">🏬 Остатки</button>
       <button data-tab="finance">💰 Финансы</button>
       <button data-tab="log">🧾 Журнал</button>
       <button data-tab="settings">⚙️ Настройки</button>
     </div>
-    <div class="footerNote">Realtime-версия: изменения подтягиваются без ручного обновления.<br><br><b style="color:#dbe7ff">5.3:</b> добавлен отдельный блок «Закупки»: партии товаров, поставщики, суммы закупок и привязка единиц товара к партии.</div>
+    <div class="footerNote">Realtime-версия: изменения подтягиваются без ручного обновления.<br><br><b style="color:#dbe7ff">5.4:</b> закупки вынесены в отдельный раздел. Товары больше не создают закупку автоматически.</div>
   </aside>
   <main class="main">
     <div class="top">
@@ -68,7 +68,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
     <section id="dashboard" class="section active">
       <div class="grid kpis">
         <div class="card kpi"><div class="label">Cash</div><div class="value" id="kCash">0 ₽</div><div class="small">Финансовый остаток</div></div>
-        <div class="card kpi"><div class="label">Прибыль</div><div class="value" id="kProfit">0 ₽</div><div class="small">По проданным товарам</div></div><div class="card kpi"><div class="label">Расходы</div><div class="value" id="kExpenses">0 ₽</div><div class="small">Реклама и прочие издержки</div></div><div class="card kpi"><div class="label">Закупки</div><div class="value" id="kPurchases">0 ₽</div><div class="small">Партии товара</div></div>
+        <div class="card kpi"><div class="label">Прибыль</div><div class="value" id="kProfit">0 ₽</div><div class="small">По проданным товарам</div></div><div class="card kpi"><div class="label">Расходы</div><div class="value" id="kExpenses">0 ₽</div><div class="small">Реклама и прочие издержки</div></div>
         <div class="card kpi"><div class="label">В товаре</div><div class="value" id="kStockMoney">0 ₽</div><div class="small">Себестоимость остатков</div></div>
         <div class="card kpi"><div class="label">В пути</div><div class="value" id="kRoad">0</div><div class="small">Куплено, но не поступило</div></div>
         <div class="card kpi"><div class="label">Ожидаем оплату</div><div class="value" id="kDeliveryMoney">0 ₽</div><div class="small" id="kDeliveryCount">0 товаров в доставке</div></div>
@@ -103,9 +103,22 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
         <button class="btn secondary" onclick="quickFilter('stuck')">Зависло</button>
         <button class="btn secondary" onclick="quickFilter('lowmargin')">Маржа &lt; 15%</button>
       </div>
-      <div class="toolbar"><div class="row"><input class="input" id="search" placeholder="Поиск: модель, категория, цвет, покупатель, трек" style="width:320px"><select class="select" id="statusFilter" style="width:210px"><option value="all">Все статусы</option><option>В пути</option><option>В продаже</option><option>В доставке</option><option>Продан</option><option>Архив</option><option value="colorless">Без цвета</option><option value="stuck">Зависло > 30 дней</option><option value="lowmargin">Маржа < 15%</option></select></div></div>
+      <div class="toolbar"><div class="row"><input class="input" id="search" placeholder="Поиск: модель, категория, цвет, покупатель, трек" style="width:320px"><select class="select" id="statusFilter" style="width:210px"><option value="all">Все статусы</option><option>В пути</option><option>В продаже</option><option>В доставке</option><option>Продан</option><option>Архив</option><option value="colorless">Без цвета</option><option value="stuck">Зависло > 30 дней</option><option value="lowmargin">Маржа < 15%</option></select></div><div class="hint">Добавление товара — через верхнюю кнопку.</div></div>
       <div class="card" style="margin-bottom:14px;padding:14px"><div class="row" style="justify-content:space-between"><div class="hint">Выбрано товаров: <b id="selectedCount">0</b>. Для старых импортированных позиций можно быстро назначить цвет пачкой.</div><div class="row"><button class="btn secondary" onclick="selectVisibleProducts()">Выбрать видимые</button><button class="btn yellow" onclick="bulkSetColor()">🎨 Назначить цвет</button><button class="btn secondary" onclick="clearProductSelection()">Снять выбор</button></div></div></div>
       <div class="tablewrap"><table><thead><tr><th style="width:44px">✓</th><th>ID</th><th>Название</th><th>Статус</th><th>Закупка</th><th>Поступление</th><th>Себестоимость</th><th>Продажа / ожидание</th><th>Прибыль</th><th>Маржа</th><th>Дни</th><th>Ответственный</th><th>Действия</th></tr></thead><tbody id="productsBody"></tbody></table></div>
+    </section>
+
+    <section id="purchases" class="section">
+      <div class="toolbar">
+        <div><h2 style="margin:0">Закупки</h2><div class="hint">Отдельный учёт партий: поставщик, дата закупки, дата поступления, сумма и комментарий. Cash уменьшается на сумму закупок.</div></div>
+        <button class="btn green" id="addPurchaseBtn">+ Добавить закупку</button>
+      </div>
+      <div class="grid kpis" style="margin-bottom:16px">
+        <div class="card kpi"><div class="label">Всего закупок</div><div class="value" id="pTotalAmount">0 ₽</div><div class="small" id="pTotalCount">0 партий</div></div>
+        <div class="card kpi"><div class="label">Товаров привязано</div><div class="value" id="pLinkedProducts">0</div><div class="small">Единиц товара с purchase_id</div></div>
+        <div class="card kpi"><div class="label">В пути по закупкам</div><div class="value" id="pRoadCount">0</div><div class="small">Без даты поступления</div></div>
+      </div>
+      <div class="tablewrap"><table><thead><tr><th>Дата закупки</th><th>Поставщик</th><th>Комментарий</th><th>Дата поступления</th><th>Сумма</th><th>Товаров</th><th>Действия</th></tr></thead><tbody id="purchasesBody"></tbody></table></div>
     </section>
 
     <section id="inventory" class="section">
@@ -146,30 +159,6 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
     </section>
 
 
-    <section id="purchases" class="section">
-      <div class="toolbar">
-        <div>
-          <h2 style="margin:0">Закупки</h2>
-          <div class="hint">Партии товаров: поставщик, сумма, даты и связь с единицами товара. Финансы теперь остаются для инвестиций, выводов и операционных расходов.</div>
-        </div>
-        <button class="btn secondary" id="refreshPurchasesBtn" onclick="renderPurchases()">Обновить закупки</button>
-      </div>
-      <div class="grid kpis" style="margin-bottom:16px">
-        <div class="card kpi"><div class="label">Всего закупок</div><div class="value" id="pPurchasesCount">0</div><div class="small">Партий в базе</div></div>
-        <div class="card kpi"><div class="label">Сумма закупок</div><div class="value" id="pPurchasesAmount">0 ₽</div><div class="small">По всем партиям</div></div>
-        <div class="card kpi"><div class="label">В пути по партиям</div><div class="value" id="pPurchasesRoad">0</div><div class="small">Поступление не заполнено</div></div>
-        <div class="card kpi"><div class="label">Средний чек партии</div><div class="value" id="pPurchasesAvg">0 ₽</div><div class="small">Сумма / количество партий</div></div>
-      </div>
-      <div class="card">
-        <div class="toolbar">
-          <h3 style="margin:0">Список закупок</h3>
-          <input class="input" id="purchaseSearch" placeholder="Поиск: поставщик, комментарий" style="max-width:320px" oninput="renderPurchases()">
-        </div>
-        <div class="tablewrap"><table><thead><tr><th>ID</th><th>Дата закупки</th><th>Поставщик</th><th>Комментарий</th><th>Дата поступления</th><th>Сумма</th><th>Единиц товара</th></tr></thead><tbody id="purchasesBody"></tbody></table></div>
-      </div>
-    </section>
-
-
     <section id="finance" class="section">
       <div class="toolbar"><div class="row"><select class="select" id="financeFilter" style="width:220px"><option value="all">Все операции</option><option>Закупка</option><option>Доставка</option><option>Продажа</option><option>Инвестиция</option><option>Вывод</option><option>Корректировка</option><option>Расход</option><option>Реклама</option><option>Комиссия</option><option>Упаковка</option><option>Доставка за свой счёт</option></select></div><button class="btn green" id="addFinanceBtn">+ Финоперация</button></div>
       <div class="tablewrap"><table><thead><tr><th>Дата</th><th>Тип</th><th>Сумма</th><th>Товар</th><th>Пользователь</th><th>Комментарий</th><th>Действие</th></tr></thead><tbody id="financeBody"></tbody></table></div>
@@ -192,11 +181,13 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
 
 <div class="modal" id="loginModal"><div class="modalbox"><h2>Вход в Mactopus ERP</h2><div class="formgrid"><div class="field"><label>Email</label><input class="input" id="loginEmail" type="email" autocomplete="email" inputmode="email"></div><div class="field"><label>Пароль</label><input class="input" id="loginPassword" type="password" autocomplete="current-password"></div><div class="field"><label>&nbsp;</label><button class="btn" id="loginBtn" type="button" style="width:100%">Войти</button></div></div><div id="loginMessage" class="alert" style="display:none;margin-top:12px"></div><div class="alert" style="margin-top:12px">Вход только для пользователей, созданных в Supabase → Authentication → Users. Если с телефона кнопка не срабатывает, открой сайт в Safari/Chrome, не во встроенном браузере Telegram/WhatsApp.</div><button class="btn secondary" onclick="closeModal('loginModal')" style="margin-top:12px">Закрыть</button></div></div>
 
-<div class="modal" id="productModal"><div class="modalbox"><h2 id="productModalTitle">Товар</h2><input type="hidden" id="productId"><div class="formgrid"><div class="field"><label>Название</label><input class="input" id="pName"></div><div class="field"><label>Категория</label><input class="input" id="pCategory" placeholder="iPhone / AirPods / Mac"></div><div class="field"><label>Цвет</label><input class="input" id="pColor" placeholder="Midnight / Silver / Black"></div><div class="field"><label>Себестоимость за 1 шт.</label><input class="input" id="pCost" type="number"></div><div class="field"><label>Плановая цена продажи за 1 шт.</label><input class="input" id="pPlan" type="number"></div><div class="field" id="pQuantityField"><label>Количество, шт.</label><input class="input" id="pQuantity" type="number" min="1" step="1" value="1"></div><div class="field"><label>Дата закупки</label><input class="input" id="pPurchaseDate" type="date"></div><div class="field"><label>Дата поступления</label><input class="input" id="pArrivalDate" type="date"></div><div class="field"><label>Поставщик / источник</label><input class="input" id="pSource"></div><div class="field"><label>Ответственный</label><input class="input" id="pOwner"></div><div class="field"><label>Комментарий</label><input class="input" id="pComment"></div></div><div class="row" style="margin-top:14px"><button class="btn green" id="saveProductBtn">Сохранить</button><button class="btn secondary" onclick="closeModal('productModal')">Закрыть</button></div></div></div>
+<div class="modal" id="productModal"><div class="modalbox"><h2 id="productModalTitle">Товар</h2><input type="hidden" id="productId"><div class="formgrid"><div class="field"><label>Название</label><input class="input" id="pName"></div><div class="field"><label>Категория</label><input class="input" id="pCategory" placeholder="iPhone / AirPods / Mac"></div><div class="field"><label>Цвет</label><input class="input" id="pColor" placeholder="Midnight / Silver / Black"></div><div class="field"><label>Себестоимость за 1 шт.</label><input class="input" id="pCost" type="number"></div><div class="field"><label>Плановая цена продажи за 1 шт.</label><input class="input" id="pPlan" type="number"></div><div class="field" id="pQuantityField"><label>Количество, шт.</label><input class="input" id="pQuantity" type="number" min="1" step="1" value="1"></div><div class="field"><label>Дата закупки</label><input class="input" id="pPurchaseDate" type="date"></div><div class="field"><label>Дата поступления</label><input class="input" id="pArrivalDate" type="date"></div><div class="field"><label>Поставщик / источник</label><input class="input" id="pSource"></div><div class="field"><label>Закупка / партия</label><select class="select" id="pPurchaseId"><option value="">Без закупки</option></select></div><div class="field"><label>Ответственный</label><input class="input" id="pOwner"></div><div class="field"><label>Комментарий</label><input class="input" id="pComment"></div></div><div class="row" style="margin-top:14px"><button class="btn green" id="saveProductBtn">Сохранить</button><button class="btn secondary" onclick="closeModal('productModal')">Закрыть</button></div></div></div>
 
 <div class="modal" id="saleModal"><div class="modalbox"><h2>Продажа товара</h2><input type="hidden" id="saleProductId"><div class="formgrid"><div class="field"><label>Цена продажи</label><input class="input" id="salePrice" type="number"></div><div class="field"><label>Дата продажи</label><input class="input" id="saleDate" type="date"></div><div class="field"><label>Кто продал</label><input class="input" id="soldBy"></div></div><div class="row" style="margin-top:14px"><button class="btn green" id="confirmSaleBtn">Провести продажу</button><button class="btn secondary" onclick="closeModal('saleModal')">Закрыть</button></div></div></div>
 
 <div class="modal" id="deliveryModal"><div class="modalbox"><h2>Отправка покупателю</h2><input type="hidden" id="deliveryProductId"><div class="formgrid"><div class="field"><label>Дата отправки</label><input class="input" id="deliveryDate" type="date"></div><div class="field"><label>Ожидаемая сумма оплаты</label><input class="input" id="deliveryExpectedPrice" type="number"></div><div class="field"><label>Служба доставки</label><input class="input" id="deliveryService" placeholder="СДЭК / Авито / Boxberry"></div><div class="field"><label>Трек-номер</label><input class="input" id="deliveryTrack"></div><div class="field"><label>Покупатель / контакт</label><input class="input" id="deliveryBuyer"></div><div class="field"><label>Комментарий</label><input class="input" id="deliveryComment"></div></div><div class="alert" style="margin-top:12px">Отправка не создаёт выручку. Деньги фиксируются только после кнопки «Оплата получена».</div><div class="row" style="margin-top:14px"><button class="btn green" id="confirmDeliveryBtn">Отправить покупателю</button><button class="btn secondary" onclick="closeModal('deliveryModal')">Закрыть</button></div></div></div>
+
+<div class="modal" id="purchaseModal"><div class="modalbox"><h2 id="purchaseModalTitle">Закупка</h2><input type="hidden" id="purchaseId"><div class="formgrid"><div class="field"><label>Поставщик</label><input class="input" id="purchaseSupplier" placeholder="Linktech / ТЯК"></div><div class="field"><label>Дата закупки</label><input class="input" id="purchaseDate" type="date"></div><div class="field"><label>Дата поступления</label><input class="input" id="purchaseArrivalDate" type="date"></div><div class="field"><label>Сумма закупки</label><input class="input" id="purchaseAmount" type="number"></div><div class="field" style="grid-column:1/-1"><label>Комментарий</label><input class="input" id="purchaseComment" placeholder="Например: 10 Air M3 из Кореи, Pitaka"></div></div><div class="alert" style="margin-top:12px">Закупка — это партия товара. Товары можно привязать к ней в карточке товара. Cash уменьшается на сумму всех закупок.</div><div class="row" style="margin-top:14px"><button class="btn green" id="savePurchaseBtn">Сохранить закупку</button><button class="btn secondary" onclick="closeModal('purchaseModal')">Закрыть</button></div></div></div>
 
 <div class="modal" id="financeModal"><div class="modalbox"><h2 id="financeModalTitle">Финансовая операция</h2><input type="hidden" id="financeId"><div class="formgrid"><div class="field"><label>Тип</label><select class="select" id="fType"><option>Инвестиция</option><option>Вывод</option><option>Корректировка</option><option>Закупка</option><option>Доставка</option><option>Продажа</option><option>Расход</option><option>Реклама</option><option>Комиссия</option><option>Упаковка</option><option>Доставка за свой счёт</option></select></div><div class="field"><label>Сумма</label><input class="input" id="fAmount" type="number"></div><div class="field"><label>Дата</label><input class="input" id="fDate" type="date"></div><div class="field" style="grid-column:1/-1"><label>Комментарий</label><input class="input" id="fComment" placeholder="Например: реклама Avito, комиссия, упаковка"></div></div><div class="alert" style="margin-top:12px">Расходы, реклама, комиссии, упаковка и доставка за свой счёт автоматически уменьшают Cash.</div><div class="row" style="margin-top:14px"><button class="btn green" id="saveFinanceBtn">Сохранить</button><button class="btn secondary" onclick="closeModal('financeModal')">Закрыть</button></div></div></div>
 
@@ -206,7 +197,6 @@ create extension if not exists "pgcrypto";
 
 create table if not exists public.products (
   id uuid primary key default gen_random_uuid(),
-  purchase_id uuid,
   name text not null,
   category text,
   color text,
@@ -228,6 +218,7 @@ create table if not exists public.products (
   owner text,
   created_by text,
   sold_by text,
+  purchase_id uuid,
   comment text,
   archived boolean not null default false,
   created_at timestamptz not null default now(),
@@ -242,13 +233,10 @@ create table if not exists public.purchases (
   arrival_date date,
   total_amount numeric default 0,
   comment text,
-  created_by text,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  created_at timestamptz default now()
 );
 
-alter table public.products
-add column if not exists purchase_id uuid references public.purchases(id) on delete set null;
+alter table public.products add column if not exists purchase_id uuid;
 
 create table if not exists public.finance (
   id uuid primary key default gen_random_uuid(),
@@ -381,18 +369,17 @@ async function loadData(opts={}){
   if(supabaseClient && sessionUser){
     const [pr,pu,fi,lg] = await Promise.all([
       supabaseClient.from('products').select('*').order('created_at',{ascending:false}),
-      supabaseClient.from('purchases').select('*').order('purchase_date',{ascending:false}),
+      supabaseClient.from('purchases').select('*').order('created_at',{ascending:false}),
       supabaseClient.from('finance').select('*').order('created_at',{ascending:false}),
       supabaseClient.from('activity_log').select('*').order('created_at',{ascending:false}).limit(200)
     ]);
     if(pr.error){ if(!opts.silent) alert('Ошибка загрузки products: '+pr.error.message); return; }
-    if(pu.error){ if(!opts.silent) alert('Ошибка загрузки purchases: '+pu.error.message+'\nВыполни SQL-патч 5.3 для создания таблицы purchases.'); state.purchases=[]; }
+    if(pu.error){ if(!opts.silent) console.warn('purchases not loaded:', pu.error.message); }
     if(fi.error){ if(!opts.silent) alert('Ошибка загрузки finance: '+fi.error.message); return; }
     if(lg.error){ if(!opts.silent) alert('Ошибка загрузки log: '+lg.error.message); return; }
     state.products=pr.data||[]; state.purchases=pu.error?[]:(pu.data||[]); state.finance=fi.data||[]; state.logs=lg.data||[];
   } else {
-    state = JSON.parse(localStorage.getItem('mactopus_demo_state')||'null') || {products:[],purchases:[],finance:[],logs:[]};
-    state.purchases = state.purchases || [];
+    state = JSON.parse(localStorage.getItem('mactopus_demo_state')||'null') || {products:[],finance:[],logs:[]};
   }
   renderAll();
 }
@@ -405,11 +392,12 @@ async function addFinance(row){
   const item={id:uid(),date:row.date||today(),type:row.type,amount:normalizeFinanceAmount(row.type, row.amount),product_id:row.product_id||null,user_name:currentName(),comment:row.comment||'',created_at:new Date().toISOString()};
   if(supabaseClient && sessionUser){ const {error}=await supabaseClient.from('finance').insert({date:item.date,type:item.type,amount:item.amount,product_id:item.product_id,user_name:item.user_name,comment:item.comment}); if(error) throw error; } else { state.finance.unshift(item); saveLocal(); }
 }
-function renderAll(){ state.purchases = state.purchases || []; renderDashboard(); renderProducts(); renderInventory(); renderPurchases(); renderFinance(); renderLog(); document.getElementById('userPill').textContent=sessionUser?.email||'Демо-пользователь'; document.getElementById('loginOpenBtn').style.display=sessionUser?'none':''; document.getElementById('logoutBtn').style.display=sessionUser?'':'none'; }
+function renderAll(){ renderDashboard(); renderProducts(); renderPurchases(); renderPurchaseSelect(); renderInventory(); renderFinance(); renderLog(); document.getElementById('userPill').textContent=sessionUser?.email||'Демо-пользователь'; document.getElementById('loginOpenBtn').style.display=sessionUser?'none':''; document.getElementById('logoutBtn').style.display=sessionUser?'':'none'; }
 function renderDashboard(){
-  const products=state.products||[], finance=state.finance||[], purchases=state.purchases||[];
+  const products=state.products||[], finance=state.finance||[];
+  const purchases=state.purchases||[];
   const purchasesTotal=purchases.reduce((s,x)=>s+Number(x.total_amount||0),0);
-  const cash=finance.reduce((s,x)=>s+Number(x.amount||0),0) - purchasesTotal;
+  const cash=finance.reduce((s,x)=>s+Number(x.amount||0),0)-purchasesTotal;
   const expenseTypes=['Расход','Издержки','Реклама','Комиссия','Упаковка','Доставка за свой счёт'];
   const expenses=finance.filter(x=>expenseTypes.includes(x.type)).reduce((s,x)=>s+Math.abs(Number(x.amount||0)),0);
   const sold=products.filter(p=>productStatus(p)==='Продан');
@@ -431,8 +419,7 @@ function renderDashboard(){
   const stuck=stock.filter(p=>daysBetween(p.arrival_date)>30).length;
   document.getElementById('kCash').textContent=fmtRub(cash); 
   document.getElementById('kProfit').textContent=fmtRub(totalProfit);
-  const kExpensesEl=document.getElementById('kExpenses'); if(kExpensesEl) kExpensesEl.textContent=fmtRub(expenses);
-  const kPurchasesEl=document.getElementById('kPurchases'); if(kPurchasesEl) kPurchasesEl.textContent=fmtRub(purchasesTotal); 
+  const kExpensesEl=document.getElementById('kExpenses'); if(kExpensesEl) kExpensesEl.textContent=fmtRub(expenses); 
   document.getElementById('kStockMoney').textContent=fmtRub(stockMoney); 
   document.getElementById('kRoad').textContent=road.length; 
   document.getElementById('kMargin').textContent=pct(avgMargin); 
@@ -670,27 +657,91 @@ function renderInventory(){
   rows.push('<tr class="summary-total"><td>Итого</td><td class="'+stockClass(total.stock)+'">'+total.stock+'</td><td>'+total.road+'</td><td>'+total.delivery+'</td><td class="risk-green">'+total.sold+'</td><td>'+total.total+'</td><td>'+fmtRub(total.stockCost)+'</td><td>'+fmtRub(total.expected)+'</td><td>'+fmtRub(total.revenue)+'</td><td>'+fmtRub(total.profit)+'</td><td></td></tr>');
   document.getElementById('inventoryBody').innerHTML=rows.join('') || '<tr><td colspan="11">Нет товаров</td></tr>';
 }
-
 function renderPurchases(){
-  if(!document.getElementById('purchasesBody')) return;
+  const body=document.getElementById('purchasesBody');
+  if(!body) return;
   const purchases=state.purchases||[];
   const products=state.products||[];
-  const q=(document.getElementById('purchaseSearch')?.value||'').toLowerCase();
-  const filtered=purchases.filter(p=>{
-    const txt=[p.supplier,p.comment,p.purchase_date,p.arrival_date].join(' ').toLowerCase();
-    return !q || txt.includes(q);
-  });
-  const totalAmount=purchases.reduce((s,p)=>s+Number(p.total_amount||0),0);
+  const total=purchases.reduce((s,p)=>s+Number(p.total_amount||0),0);
+  const linked=products.filter(p=>p.purchase_id).length;
   const road=purchases.filter(p=>!p.arrival_date).length;
-  const avg=purchases.length ? totalAmount/purchases.length : 0;
-  const byPurchase={}; products.forEach(item=>{ if(item.purchase_id) byPurchase[item.purchase_id]=(byPurchase[item.purchase_id]||0)+1; });
-  const set=(id,val)=>{ const el=document.getElementById(id); if(el) el.textContent=val; };
-  set('pPurchasesCount', purchases.length);
-  set('pPurchasesAmount', fmtRub(totalAmount));
-  set('pPurchasesRoad', road);
-  set('pPurchasesAvg', fmtRub(avg));
-  document.getElementById('purchasesBody').innerHTML=filtered.map(p=>`<tr><td>${String(p.id).slice(0,8)}</td><td>${p.purchase_date||'—'}</td><td><b>${esc(p.supplier||'—')}</b></td><td>${esc(p.comment||'')}</td><td>${p.arrival_date||'—'}</td><td><b>${fmtRub(p.total_amount)}</b></td><td>${byPurchase[p.id]||0}</td></tr>`).join('') || '<tr><td colspan="7">Закупок пока нет</td></tr>';
+  const totalAmountEl=document.getElementById('pTotalAmount'); if(totalAmountEl) totalAmountEl.textContent=fmtRub(total);
+  const totalCountEl=document.getElementById('pTotalCount'); if(totalCountEl) totalCountEl.textContent=purchases.length+' партий';
+  const linkedEl=document.getElementById('pLinkedProducts'); if(linkedEl) linkedEl.textContent=linked;
+  const roadEl=document.getElementById('pRoadCount'); if(roadEl) roadEl.textContent=road;
+  body.innerHTML=purchases.map(p=>{
+    const count=products.filter(x=>x.purchase_id===p.id).length;
+    return `<tr><td>${p.purchase_date||'—'}</td><td><b>${esc(p.supplier||'—')}</b></td><td>${esc(p.comment||'')}</td><td>${p.arrival_date||'—'}</td><td><b>${fmtRub(p.total_amount)}</b></td><td>${count}</td><td><div class="row"><button class="btn secondary" onclick="editPurchase('${p.id}')">Редактировать</button><button class="btn danger" onclick="deletePurchase('${p.id}')">Удалить</button></div></td></tr>`;
+  }).join('')||'<tr><td colspan="7">Нет закупок</td></tr>';
 }
+function renderPurchaseSelect(){
+  const select=document.getElementById('pPurchaseId');
+  if(!select) return;
+  const current=select.value;
+  const options=(state.purchases||[]).map(p=>`<option value="${p.id}">${esc(p.purchase_date||'—')} · ${esc(p.supplier||'—')} · ${fmtRub(p.total_amount)}${p.comment?' · '+esc(p.comment):''}</option>`).join('');
+  select.innerHTML='<option value="">Без закупки</option>'+options;
+  if(current) select.value=current;
+}
+function openNewPurchase(){
+  purchaseModalTitle.textContent='Новая закупка';
+  purchaseId.value='';
+  purchaseSupplier.value='';
+  purchaseDate.value=today();
+  purchaseArrivalDate.value='';
+  purchaseAmount.value='';
+  purchaseComment.value='';
+  openModal('purchaseModal');
+}
+function editPurchase(id){
+  const p=(state.purchases||[]).find(x=>x.id===id);
+  if(!p) return alert('Закупка не найдена');
+  purchaseModalTitle.textContent='Редактирование закупки';
+  purchaseId.value=p.id;
+  purchaseSupplier.value=p.supplier||'';
+  purchaseDate.value=p.purchase_date||'';
+  purchaseArrivalDate.value=p.arrival_date||'';
+  purchaseAmount.value=Number(p.total_amount||0);
+  purchaseComment.value=p.comment||'';
+  openModal('purchaseModal');
+}
+async function savePurchase(){
+  const id=(purchaseId.value||'').trim();
+  const amount=Number(purchaseAmount.value)||0;
+  if(amount<=0) return alert('Укажи сумму закупки больше 0');
+  const row={supplier:purchaseSupplier.value.trim(),purchase_date:purchaseDate.value||today(),arrival_date:purchaseArrivalDate.value||null,total_amount:amount,comment:purchaseComment.value.trim()};
+  if(supabaseClient&&sessionUser){
+    if(id){
+      const {error}=await supabaseClient.from('purchases').update(row).eq('id',id);
+      if(error) return alert('Ошибка сохранения закупки: '+error.message);
+      await addLog('Редактирование закупки', null, `${row.supplier||'—'}; ${fmtRub(amount)}`);
+    } else {
+      const {data,error}=await supabaseClient.from('purchases').insert(row).select().single();
+      if(error) return alert('Ошибка сохранения закупки: '+error.message);
+      await addLog('Создание закупки', null, `${row.supplier||'—'}; ${fmtRub(amount)}; ${row.comment||''}`);
+    }
+  } else {
+    if(id){ const p=state.purchases.find(x=>x.id===id); if(p) Object.assign(p,row); }
+    else state.purchases.unshift({id:uid(),...row,created_at:new Date().toISOString()});
+    saveLocal();
+    await addLog(id?'Редактирование закупки':'Создание закупки', null, `${row.supplier||'—'}; ${fmtRub(amount)}`);
+  }
+  closeModal('purchaseModal');
+  await loadData();
+}
+async function deletePurchase(id){
+  const p=(state.purchases||[]).find(x=>x.id===id);
+  if(!p) return alert('Закупка не найдена');
+  const linked=(state.products||[]).filter(x=>x.purchase_id===id).length;
+  if(linked>0) return alert('Нельзя удалить закупку: к ней привязано товаров: '+linked+'. Сначала отвяжи или удали товары.');
+  if(!confirm('Удалить закупку «'+(p.supplier||'—')+'» на '+fmtRub(p.total_amount)+'? Это изменит Cash.')) return;
+  if(supabaseClient&&sessionUser){
+    const {error}=await supabaseClient.from('purchases').delete().eq('id',id);
+    if(error) return alert('Ошибка удаления закупки: '+error.message);
+    await addLog('Удаление закупки', null, `${p.supplier||'—'}; ${fmtRub(p.total_amount)}`);
+  } else { state.purchases=state.purchases.filter(x=>x.id!==id); saveLocal(); await addLog('Удаление закупки', null, `${p.supplier||'—'}; ${fmtRub(p.total_amount)}`); }
+  await loadData();
+}
+window.editPurchase=editPurchase; window.deletePurchase=deletePurchase;
 
 function renderFinance(){
   const f=document.getElementById('financeFilter').value;
@@ -712,83 +763,52 @@ function renderLog(){document.getElementById('logBody').innerHTML=(state.logs||[
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
 async function saveProduct(){
   const id=document.getElementById('productId').value;
-  const get=id=>document.getElementById(id);
   const existing = id ? state.products.find(p=>p.id===id) : null;
   const before = snapshotProduct(existing);
-  const quantityInput = get('pQuantity');
+  const quantityInput = document.getElementById('pQuantity');
   const quantity = id ? 1 : Math.max(1, Math.floor(Number(quantityInput?.value || 1)));
-  const row={
-    name:get('pName').value.trim(),
-    category:get('pCategory').value.trim(),
-    color:(get('pColor')?.value||'').trim(),
-    cost:Number(get('pCost').value)||0,
-    planned_sale_price:Number(get('pPlan').value)||0,
-    purchase_date:get('pPurchaseDate').value||null,
-    arrival_date:get('pArrivalDate').value||null,
-    source:get('pSource').value.trim(),
-    owner:get('pOwner').value.trim(),
-    comment:get('pComment').value.trim()
-  };
+  const row={name:pName.value.trim(),category:pCategory.value.trim(),color:(document.getElementById('pColor')?.value||'').trim(),cost:Number(pCost.value)||0,planned_sale_price:Number(pPlan.value)||0,purchase_date:pPurchaseDate.value||null,arrival_date:pArrivalDate.value||null,source:pSource.value.trim(),purchase_id:(document.getElementById('pPurchaseId')?.value||null),owner:pOwner.value.trim(),comment:pComment.value.trim()};
   if(!row.name) return alert('Укажи название');
   if(row.cost<=0) return alert('Себестоимость за 1 шт. должна быть больше 0');
   if(quantity > 100) return alert('Слишком большое количество для одной партии. Максимум 100 шт.');
   if(!id) row.status=row.arrival_date?'В продаже':'В пути';
-  try{
-    if(id){
-      if(existing && productStatus(existing)==='Продан'){
-        const ok = confirm('Товар уже продан. Изменять проданный товар можно только осознанно. Продолжить?');
-        if(!ok) return;
-      }
-      row.updated_at=new Date().toISOString();
-      if(supabaseClient&&sessionUser){
-        const {data,error}=await supabaseClient.from('products').update(row).eq('id',id).select().single();
-        if(error) throw error;
-        await addLog('Редактирование товара',id,diffText(before, snapshotProduct(data)) || row.name);
-      } else {
-        const i=state.products.findIndex(p=>p.id===id); state.products[i]={...state.products[i],...row}; saveLocal();
-        await addLog('Редактирование товара',id,diffText(before, snapshotProduct(state.products[i])) || row.name);
-      }
-    } else {
-      const totalCost = row.cost * quantity;
-      let purchaseId = null;
-      const purchaseRow={supplier:row.source||row.owner||'', purchase_date:row.purchase_date||today(), arrival_date:row.arrival_date||null, total_amount:totalCost, comment:row.comment||`Партия ${quantity} шт. · ${row.name}`, created_by:currentName()};
-      if(supabaseClient&&sessionUser){
-        const {data:purchaseData,error:purchaseError}=await supabaseClient.from('purchases').insert(purchaseRow).select().single();
-        if(purchaseError) throw purchaseError;
-        purchaseId = purchaseData.id;
-      } else {
-        purchaseId=uid();
-        state.purchases=state.purchases||[];
-        state.purchases.unshift({id:purchaseId,...purchaseRow,created_at:new Date().toISOString()});
-        saveLocal();
-      }
-      const baseComment = row.comment;
-      const rows = Array.from({length: quantity}, (_, idx)=>({
-        ...row,
-        purchase_id: purchaseId,
-        id: uid(),
-        created_by: currentName(),
-        created_at: new Date().toISOString(),
-        comment: quantity>1 ? `${baseComment ? baseComment + ' · ' : ''}Партия: ${quantity} шт.; позиция ${idx+1}/${quantity}` : baseComment
-      }));
-
-      let createdRows = rows;
-      if(supabaseClient&&sessionUser){
-        const {data,error}=await supabaseClient.from('products').insert(rows).select();
-        if(error) throw error;
-        createdRows = data || [];
-      } else {
-        state.products.unshift(...rows); saveLocal();
-      }
-      await addLog('Создание закупки и партии товара', createdRows[0]?.id || null, `Поставщик: ${purchaseRow.supplier||'—'}; название: ${row.name}; количество: ${quantity} шт.; себестоимость за 1 шт.: ${fmtRub(row.cost)}; сумма закупки: ${fmtRub(totalCost)}; статус: ${row.status}`);
+  if(id){
+    if(existing && productStatus(existing)==='Продан'){
+      const ok = confirm('Товар уже продан. Изменять проданный товар можно только осознанно. Продолжить?');
+      if(!ok) return;
     }
-    closeModal('productModal');
-    await loadData();
-  }catch(e){
-    alert('Ошибка сохранения товара/закупки: '+(e.message||e));
-  }
-}
+    row.updated_at=new Date().toISOString();
+    if(supabaseClient&&sessionUser){
+      const {data,error}=await supabaseClient.from('products').update(row).eq('id',id).select().single();
+      if(error) return alert(error.message);
+      await addLog('Редактирование товара',id,diffText(before, snapshotProduct(data)) || row.name);
+    } else {
+      const i=state.products.findIndex(p=>p.id===id); state.products[i]={...state.products[i],...row}; saveLocal();
+      await addLog('Редактирование товара',id,diffText(before, snapshotProduct(state.products[i])) || row.name);
+    }
+  } else {
+    const baseComment = row.comment;
+    const rows = Array.from({length: quantity}, (_, idx)=>({
+      ...row,
+      id: uid(),
+      created_by: currentName(),
+      created_at: new Date().toISOString(),
+      comment: quantity>1 ? `${baseComment ? baseComment + ' · ' : ''}Партия: ${quantity} шт.; позиция ${idx+1}/${quantity}` : baseComment
+    }));
 
+    let createdRows = rows;
+    if(supabaseClient&&sessionUser){
+      const {data,error}=await supabaseClient.from('products').insert(rows).select();
+      if(error) return alert(error.message);
+      createdRows = data || [];
+    } else {
+      state.products.unshift(...rows); saveLocal();
+    }
+
+    const totalCost = row.cost * quantity;
+    await addLog('Создание партии товара', createdRows[0]?.id || null, `Название: ${row.name}; количество: ${quantity} шт.; себестоимость за 1 шт.: ${fmtRub(row.cost)}; всего: ${fmtRub(totalCost)}; статус: ${row.status}`);
+  }
+  closeModal('productModal'); await loadData(); }
 async function markArrived(id){
   const p=state.products.find(p=>p.id===id);
   if(!p) return alert('Товар не найден');
@@ -811,7 +831,7 @@ async function archiveProduct(id){
   const patch={archived:true,status:'Архив',updated_at:new Date().toISOString()};
   if(supabaseClient&&sessionUser){const {data,error}=await supabaseClient.from('products').update(patch).eq('id',id).is('sale_date',null).select().single(); if(error) return alert('Не удалось архивировать. Возможно, товар уже продан или изменён: '+error.message); await addLog('Архивирование товара',id,diffText(before, snapshotProduct(data)) || p.name);} else {p.archived=true; p.status='Архив'; saveLocal(); await addLog('Архивирование товара',id,diffText(before, snapshotProduct(p)) || p.name);}
   await loadData(); }
-function editProduct(id){const p=state.products.find(x=>x.id===id); productModalTitle.textContent='Редактировать товар'; productId.value=p.id; pName.value=p.name||''; pCategory.value=p.category||''; if(document.getElementById('pColor')) pColor.value=p.color||''; pCost.value=p.cost||0; pPlan.value=p.planned_sale_price||0; if(document.getElementById('pQuantity')) pQuantity.value=1; if(document.getElementById('pQuantityField')) pQuantityField.style.display='none'; pPurchaseDate.value=p.purchase_date||''; pArrivalDate.value=p.arrival_date||''; pSource.value=p.source||''; pOwner.value=p.owner||''; pComment.value=p.comment||''; openModal('productModal');}
+function editProduct(id){const p=state.products.find(x=>x.id===id); productModalTitle.textContent='Редактировать товар'; productId.value=p.id; pName.value=p.name||''; pCategory.value=p.category||''; if(document.getElementById('pColor')) pColor.value=p.color||''; if(document.getElementById('pPurchaseId')) pPurchaseId.value=p.purchase_id||''; pCost.value=p.cost||0; pPlan.value=p.planned_sale_price||0; if(document.getElementById('pQuantity')) pQuantity.value=1; if(document.getElementById('pQuantityField')) pQuantityField.style.display='none'; pPurchaseDate.value=p.purchase_date||''; pArrivalDate.value=p.arrival_date||''; pSource.value=p.source||''; pOwner.value=p.owner||''; pComment.value=p.comment||''; openModal('productModal');}
 function openSale(id){const p=state.products.find(x=>x.id===id); if(!p) return alert('Товар не найден'); const st=productStatus(p); if(st!=='В продаже' && st!=='В доставке') return alert('Продать можно только товар в продаже или в доставке'); if(p.sale_date||p.actual_sale_price) return alert('Этот товар уже отмечен как проданный'); saleProductId.value=id; salePrice.value=p.delivery_expected_price||p.planned_sale_price||''; saleDate.value=today(); soldBy.value=currentName(); openModal('saleModal');}
 function openDelivery(id){
   const p=state.products.find(x=>x.id===id); 
@@ -1071,21 +1091,11 @@ loginBtn.addEventListener('click', handleLogin);
 loginPassword.addEventListener('keydown', e=>{ if(e.key==='Enter') handleLogin(); });
 loginEmail.addEventListener('keydown', e=>{ if(e.key==='Enter') loginPassword.focus(); });
 logoutBtn.onclick=async()=>{ stopRealtime(); if(supabaseClient) await supabaseClient.auth.signOut(); sessionUser=null; await loadData(); };
-function openNewProduct(){
-  const titleEl=document.getElementById('productModalTitle');
-  if(titleEl) titleEl.textContent='Добавить товар';
-  ['productId','pName','pCategory','pColor','pCost','pPlan','pPurchaseDate','pArrivalDate','pSource','pOwner','pComment'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
-  const q=document.getElementById('pQuantity'); if(q) q.value=1;
-  const qf=document.getElementById('pQuantityField'); if(qf) qf.style.display='block';
-  const pd=document.getElementById('pPurchaseDate'); if(pd) pd.value=today();
-  const owner=document.getElementById('pOwner'); if(owner) owner.value=currentName();
-  openModal('productModal');
-}
-loginOpenBtn.onclick=()=>openModal('loginModal'); syncBtn.onclick=loadData; document.getElementById('addProductBtn')?.addEventListener('click', openNewProduct); addFinanceBtn.onclick=openNewFinance; saveProductBtn.onclick=saveProduct; confirmSaleBtn.onclick=confirmSale; confirmDeliveryBtn.onclick=confirmDelivery; saveFinanceBtn.onclick=saveFinance; saveConfigBtn.onclick=()=>{localStorage.setItem('mactopus_supabase_config',JSON.stringify({url:supabaseUrl.value.trim(),key:supabaseKey.value.trim()})); alert('Настройки сохранены. Обнови страницу, после входа Realtime включится автоматически.');}; copySqlBtn.onclick=()=>navigator.clipboard.writeText(SQL).then(()=>alert('SQL скопирован')); search.oninput=renderProducts; statusFilter.onchange=renderProducts; financeFilter.onchange=renderFinance; if(document.getElementById('inventorySearch')) inventorySearch.oninput=renderInventory;
-demoSeedBtn.onclick=()=>{state={products:[{id:uid(),name:'iPhone 15 Pro 256',category:'iPhone',cost:76000,planned_sale_price:89000,purchase_date:today(),arrival_date:today(),status:'В продаже',created_by:'demo'},{id:uid(),name:'AirPods Pro 2',category:'AirPods',cost:14500,planned_sale_price:18500,purchase_date:today(),arrival_date:null,status:'В пути',created_by:'demo'}],finance:[],logs:[]}; state.finance=[{id:uid(),type:'Закупка',amount:-76000,date:today(),product_id:state.products[0].id,user_name:'demo',comment:'Демо закупка',created_at:new Date().toISOString()},{id:uid(),type:'Закупка',amount:-14500,date:today(),product_id:state.products[1].id,user_name:'demo',comment:'Демо закупка',created_at:new Date().toISOString()},{id:uid(),type:'Инвестиция',amount:150000,date:today(),user_name:'demo',comment:'Старт',created_at:new Date().toISOString()}]; state.logs=[{id:uid(),action:'Загрузка демо',user_name:'demo',details:'Стартовые данные',created_at:new Date().toISOString()}]; saveLocal(); renderAll();};
+loginOpenBtn.onclick=()=>openModal('loginModal'); syncBtn.onclick=loadData; document.getElementById('addProductBtn').onclick=()=>{productModalTitle.textContent='Добавить товар'; ['productId','pName','pCategory','pColor','pCost','pPlan','pPurchaseDate','pArrivalDate','pSource','pOwner','pComment'].forEach(id=>{const el=document.getElementById(id); if(el) el.value='';}); if(document.getElementById('pPurchaseId')) pPurchaseId.value=''; if(document.getElementById('pQuantity')) pQuantity.value=1; if(document.getElementById('pQuantityField')) pQuantityField.style.display='block'; pPurchaseDate.value=today(); pOwner.value=currentName(); renderPurchaseSelect(); openModal('productModal');}; if(document.getElementById('addPurchaseBtn')) addPurchaseBtn.onclick=openNewPurchase; addFinanceBtn.onclick=openNewFinance; saveProductBtn.onclick=saveProduct; if(document.getElementById('savePurchaseBtn')) savePurchaseBtn.onclick=savePurchase; confirmSaleBtn.onclick=confirmSale; confirmDeliveryBtn.onclick=confirmDelivery; saveFinanceBtn.onclick=saveFinance; saveConfigBtn.onclick=()=>{localStorage.setItem('mactopus_supabase_config',JSON.stringify({url:supabaseUrl.value.trim(),key:supabaseKey.value.trim()})); alert('Настройки сохранены. Обнови страницу, после входа Realtime включится автоматически.');}; copySqlBtn.onclick=()=>navigator.clipboard.writeText(SQL).then(()=>alert('SQL скопирован')); search.oninput=renderProducts; statusFilter.onchange=renderProducts; financeFilter.onchange=renderFinance; if(document.getElementById('inventorySearch')) inventorySearch.oninput=renderInventory;
+demoSeedBtn.onclick=()=>{state={products:[{id:uid(),name:'iPhone 15 Pro 256',category:'iPhone',cost:76000,planned_sale_price:89000,purchase_date:today(),arrival_date:today(),status:'В продаже',created_by:'demo'},{id:uid(),name:'AirPods Pro 2',category:'AirPods',cost:14500,planned_sale_price:18500,purchase_date:today(),arrival_date:null,status:'В пути',created_by:'demo'}],purchases:[{id:uid(),supplier:'demo',purchase_date:today(),arrival_date:today(),total_amount:90500,comment:'Демо закупка',created_at:new Date().toISOString()}],finance:[],logs:[]}; state.finance=[{id:uid(),type:'Закупка',amount:-76000,date:today(),product_id:state.products[0].id,user_name:'demo',comment:'Демо закупка',created_at:new Date().toISOString()},{id:uid(),type:'Закупка',amount:-14500,date:today(),product_id:state.products[1].id,user_name:'demo',comment:'Демо закупка',created_at:new Date().toISOString()},{id:uid(),type:'Инвестиция',amount:150000,date:today(),user_name:'demo',comment:'Старт',created_at:new Date().toISOString()}]; state.logs=[{id:uid(),action:'Загрузка демо',user_name:'demo',details:'Стартовые данные',created_at:new Date().toISOString()}]; saveLocal(); renderAll();};
 exportJsonBtn.onclick=()=>{const backup={exported_at:new Date().toISOString(),exported_by:currentName(),version:'3.6.3',...state}; const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='mactopus_backup_'+new Date().toISOString().slice(0,10)+'.json'; a.click();};
 importJson.onchange=async(e)=>{const file=e.target.files[0]; if(!file) return; state=JSON.parse(await file.text()); saveLocal(); renderAll();};
-document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active')); b.classList.add('active'); document.querySelectorAll('.section').forEach(s=>s.classList.remove('active')); document.getElementById(b.dataset.tab).classList.add('active'); title.textContent=b.textContent.replace(/[📊📦🏬💰🧾⚙️]/g,'').trim();});
+document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active')); b.classList.add('active'); document.querySelectorAll('.section').forEach(s=>s.classList.remove('active')); document.getElementById(b.dataset.tab).classList.add('active'); title.textContent=b.textContent.replace(/[📊📦💰🧾⚙️🏬]/g,'').trim();});
 initClient(); authCheck();
 </script>
 </body>
