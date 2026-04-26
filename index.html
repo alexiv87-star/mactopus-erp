@@ -173,7 +173,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
 
 <div class="modal" id="deliveryModal"><div class="modalbox"><h2>Отправка покупателю</h2><input type="hidden" id="deliveryProductId"><div class="formgrid"><div class="field"><label>Дата отправки</label><input class="input" id="deliveryDate" type="date"></div><div class="field"><label>Ожидаемая сумма оплаты</label><input class="input" id="deliveryExpectedPrice" type="number"></div><div class="field"><label>Служба доставки</label><input class="input" id="deliveryService" placeholder="СДЭК / Авито / Boxberry"></div><div class="field"><label>Трек-номер</label><input class="input" id="deliveryTrack"></div><div class="field"><label>Покупатель / контакт</label><input class="input" id="deliveryBuyer"></div><div class="field"><label>Комментарий</label><input class="input" id="deliveryComment"></div></div><div class="alert" style="margin-top:12px">Отправка не создаёт выручку. Деньги фиксируются только после кнопки «Оплата получена».</div><div class="row" style="margin-top:14px"><button class="btn green" id="confirmDeliveryBtn">Отправить покупателю</button><button class="btn secondary" onclick="closeModal('deliveryModal')">Закрыть</button></div></div></div>
 
-<div class="modal" id="financeModal"><div class="modalbox"><h2>Финансовая операция</h2><div class="formgrid"><div class="field"><label>Тип</label><select class="select" id="fType"><option>Инвестиция</option><option>Вывод</option><option>Корректировка</option><option>Закупка</option><option>Доставка</option><option>Продажа</option><option>Расход</option><option>Реклама</option><option>Комиссия</option><option>Упаковка</option><option>Доставка за свой счёт</option></select></div><div class="field"><label>Сумма</label><input class="input" id="fAmount" type="number"></div><div class="field"><label>Дата</label><input class="input" id="fDate" type="date"></div><div class="field" style="grid-column:1/-1"><label>Комментарий</label><input class="input" id="fComment" placeholder="Например: реклама Avito, комиссия, упаковка"></div></div><div class="alert" style="margin-top:12px">Расходы, реклама, комиссии, упаковка и доставка за свой счёт автоматически уменьшают Cash.</div><div class="row" style="margin-top:14px"><button class="btn green" id="saveFinanceBtn">Сохранить</button><button class="btn secondary" onclick="closeModal('financeModal')">Закрыть</button></div></div></div>
+<div class="modal" id="financeModal"><div class="modalbox"><h2 id="financeModalTitle">Финансовая операция</h2><input type="hidden" id="financeId"><div class="formgrid"><div class="field"><label>Тип</label><select class="select" id="fType"><option>Инвестиция</option><option>Вывод</option><option>Корректировка</option><option>Закупка</option><option>Доставка</option><option>Продажа</option><option>Расход</option><option>Реклама</option><option>Комиссия</option><option>Упаковка</option><option>Доставка за свой счёт</option></select></div><div class="field"><label>Сумма</label><input class="input" id="fAmount" type="number"></div><div class="field"><label>Дата</label><input class="input" id="fDate" type="date"></div><div class="field" style="grid-column:1/-1"><label>Комментарий</label><input class="input" id="fComment" placeholder="Например: реклама Avito, комиссия, упаковка"></div></div><div class="alert" style="margin-top:12px">Расходы, реклама, комиссии, упаковка и доставка за свой счёт автоматически уменьшают Cash.</div><div class="row" style="margin-top:14px"><button class="btn green" id="saveFinanceBtn">Сохранить</button><button class="btn secondary" onclick="closeModal('financeModal')">Закрыть</button></div></div></div>
 
 <script>
 const SQL = `-- Mactopus ERP 2.0 / Supabase schema
@@ -619,7 +619,22 @@ function renderInventory(){
   rows.push('<tr class="summary-total"><td>Итого</td><td class="'+stockClass(total.stock)+'">'+total.stock+'</td><td>'+total.road+'</td><td>'+total.delivery+'</td><td class="risk-green">'+total.sold+'</td><td>'+total.total+'</td><td>'+fmtRub(total.stockCost)+'</td><td>'+fmtRub(total.expected)+'</td><td>'+fmtRub(total.revenue)+'</td><td>'+fmtRub(total.profit)+'</td><td></td></tr>');
   document.getElementById('inventoryBody').innerHTML=rows.join('') || '<tr><td colspan="11">Нет товаров</td></tr>';
 }
-function renderFinance(){const f=document.getElementById('financeFilter').value; let arr=state.finance.filter(x=>f==='all'||x.type===f); document.getElementById('financeBody').innerHTML=arr.map(x=>{const p=state.products.find(p=>p.id===x.product_id); return `<tr><td>${x.date||'—'}</td><td>${esc(x.type)}</td><td><b>${fmtRub(x.amount)}</b></td><td>${esc(p?.name||'—')}</td><td>${esc(x.user_name||'—')}</td><td>${esc(x.comment||'')}</td><td><button class="btn danger" onclick="deleteFinance('${x.id}')">Удалить</button></td></tr>`}).join('')||'<tr><td colspan="7">Нет операций</td></tr>'; }
+function renderFinance(){
+  const f=document.getElementById('financeFilter').value;
+  let arr=state.finance.filter(x=>f==='all'||x.type===f);
+  document.getElementById('financeBody').innerHTML=arr.map(x=>{
+    const p=state.products.find(p=>p.id===x.product_id);
+    return '<tr>' +
+      '<td>'+(x.date||'—')+'</td>' +
+      '<td>'+esc(x.type)+'</td>' +
+      '<td><b>'+fmtRub(x.amount)+'</b></td>' +
+      '<td>'+esc(p?.name||'—')+'</td>' +
+      '<td>'+esc(x.user_name||'—')+'</td>' +
+      '<td>'+esc(x.comment||'')+'</td>' +
+      '<td><div class="row"><button class="btn secondary" onclick="editFinance(\''+x.id+'\')">Редактировать</button><button class="btn danger" onclick="deleteFinance(\''+x.id+'\')">Удалить</button></div></td>' +
+      '</tr>';
+  }).join('')||'<tr><td colspan="7">Нет операций</td></tr>';
+}
 function renderLog(){document.getElementById('logBody').innerHTML=(state.logs||[]).map(x=>{const p=state.products.find(p=>p.id===x.product_id); return `<tr><td>${new Date(x.created_at).toLocaleString('ru-RU')}</td><td>${esc(x.action)}</td><td>${esc(x.user_name||'—')}</td><td>${esc(p?.name||'—')}</td><td>${esc(x.details||'')}</td></tr>`}).join('')||'<tr><td colspan="5">Журнал пуст</td></tr>';}
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
 async function saveProduct(){
@@ -840,8 +855,64 @@ async function deleteProduct(id){
   await loadData();
 }
 function normalizeFinanceAmount(type, value){ const raw = Number(value) || 0; const abs = Math.abs(raw); if(["Вывод","Закупка","Расход","Издержки","Реклама","Комиссия","Упаковка","Доставка за свой счёт"].includes(type)) return -abs; if(["Инвестиция","Продажа"].includes(type)) return abs; return raw; }
-async function saveFinance(){ const rawAmount=Number(fAmount.value)||0; if(!rawAmount) return alert("Укажи сумму"); const type=fType.value; const amount=normalizeFinanceAmount(type, rawAmount); await addFinance({type,amount,date:fDate.value||today(),comment:fComment.value}); await addLog("Финансовая операция",null,`${type}: ${fmtRub(amount)}`); closeModal("financeModal"); await loadData(); }
-window.editProduct=editProduct; window.openSale=openSale; window.openDelivery=openDelivery; window.paymentReceived=paymentReceived; window.returnFromDelivery=returnFromDelivery; window.markArrived=markArrived; window.archiveProduct=archiveProduct; window.cancelSale=cancelSale; window.deleteProduct=deleteProduct; window.deleteFinance=deleteFinance;
+function financeDiffText(before={}, after={}){
+  const parts=[];
+  if(String(before.type||'')!==String(after.type||'')) parts.push('Тип: '+(before.type||'—')+' → '+(after.type||'—'));
+  if(Number(before.amount||0)!==Number(after.amount||0)) parts.push('Сумма: '+fmtRub(before.amount)+' → '+fmtRub(after.amount));
+  if(String(before.date||'')!==String(after.date||'')) parts.push('Дата: '+(before.date||'—')+' → '+(after.date||'—'));
+  if(String(before.comment||'')!==String(after.comment||'')) parts.push('Комментарий: '+(before.comment||'—')+' → '+(after.comment||'—'));
+  return parts.join('; ');
+}
+function openNewFinance(){
+  financeModalTitle.textContent='Новая финансовая операция';
+  financeId.value='';
+  fDate.value=today();
+  fAmount.value='';
+  fComment.value='';
+  fType.value='Инвестиция';
+  openModal('financeModal');
+}
+function editFinance(id){
+  const item=(state.finance||[]).find(x=>x.id===id);
+  if(!item) return alert('Финансовая операция не найдена');
+  financeModalTitle.textContent='Редактирование финоперации';
+  financeId.value=item.id;
+  fType.value=item.type||'Корректировка';
+  fAmount.value=Math.abs(Number(item.amount||0));
+  fDate.value=item.date||today();
+  fComment.value=item.comment||'';
+  openModal('financeModal');
+}
+async function saveFinance(){
+  const rawAmount=Number(fAmount.value)||0;
+  if(!rawAmount) return alert("Укажи сумму");
+  const id=(financeId?.value||'').trim();
+  const type=fType.value;
+  const amount=normalizeFinanceAmount(type, rawAmount);
+  const row={type,amount,date:fDate.value||today(),comment:fComment.value||'',user_name:currentName()};
+  if(id){
+    const before=(state.finance||[]).find(x=>x.id===id);
+    if(!before) return alert('Финансовая операция не найдена. Обнови страницу.');
+    if(!confirm('Сохранить изменения финоперации? Это может изменить Cash.')) return;
+    if(supabaseClient&&sessionUser){
+      const {data,error}=await supabaseClient.from('finance').update(row).eq('id',id).select().single();
+      if(error) return alert('Ошибка сохранения: '+error.message);
+      await addLog('Редактирование финоперации', data.product_id || null, financeDiffText(before, data) || (type+': '+fmtRub(amount)));
+    } else {
+      const beforeCopy={...before};
+      Object.assign(before,row);
+      await addLog('Редактирование финоперации', before.product_id || null, financeDiffText(beforeCopy, before) || (type+': '+fmtRub(amount)));
+      saveLocal();
+    }
+  } else {
+    await addFinance({type,amount,date:row.date,comment:row.comment});
+    await addLog("Финансовая операция",null,type+': '+fmtRub(amount));
+  }
+  financeId.value='';
+  closeModal("financeModal");
+  await loadData();
+}
+window.editProduct=editProduct; window.openSale=openSale; window.openDelivery=openDelivery; window.paymentReceived=paymentReceived; window.returnFromDelivery=returnFromDelivery; window.markArrived=markArrived; window.archiveProduct=archiveProduct; window.cancelSale=cancelSale; window.deleteProduct=deleteProduct; window.deleteFinance=deleteFinance; window.editFinance=editFinance;
 async function authCheck(){
   if(!supabaseClient) return;
   try{
@@ -899,7 +970,7 @@ loginBtn.addEventListener('click', handleLogin);
 loginPassword.addEventListener('keydown', e=>{ if(e.key==='Enter') handleLogin(); });
 loginEmail.addEventListener('keydown', e=>{ if(e.key==='Enter') loginPassword.focus(); });
 logoutBtn.onclick=async()=>{ stopRealtime(); if(supabaseClient) await supabaseClient.auth.signOut(); sessionUser=null; await loadData(); };
-loginOpenBtn.onclick=()=>openModal('loginModal'); syncBtn.onclick=loadData; addProductBtn.onclick=()=>{productModalTitle.textContent='Добавить товар'; ['productId','pName','pCategory','pColor','pCost','pPlan','pPurchaseDate','pArrivalDate','pSource','pOwner','pComment'].forEach(id=>document.getElementById(id).value=''); if(document.getElementById('pQuantity')) pQuantity.value=1; if(document.getElementById('pQuantityField')) pQuantityField.style.display='block'; pPurchaseDate.value=today(); pOwner.value=currentName(); openModal('productModal');}; addFinanceBtn.onclick=()=>{fDate.value=today(); fAmount.value=''; fComment.value=''; openModal('financeModal');}; saveProductBtn.onclick=saveProduct; confirmSaleBtn.onclick=confirmSale; confirmDeliveryBtn.onclick=confirmDelivery; saveFinanceBtn.onclick=saveFinance; saveConfigBtn.onclick=()=>{localStorage.setItem('mactopus_supabase_config',JSON.stringify({url:supabaseUrl.value.trim(),key:supabaseKey.value.trim()})); alert('Настройки сохранены. Обнови страницу, после входа Realtime включится автоматически.');}; copySqlBtn.onclick=()=>navigator.clipboard.writeText(SQL).then(()=>alert('SQL скопирован')); search.oninput=renderProducts; statusFilter.onchange=renderProducts; financeFilter.onchange=renderFinance; if(document.getElementById('inventorySearch')) inventorySearch.oninput=renderInventory;
+loginOpenBtn.onclick=()=>openModal('loginModal'); syncBtn.onclick=loadData; addProductBtn.onclick=()=>{productModalTitle.textContent='Добавить товар'; ['productId','pName','pCategory','pColor','pCost','pPlan','pPurchaseDate','pArrivalDate','pSource','pOwner','pComment'].forEach(id=>document.getElementById(id).value=''); if(document.getElementById('pQuantity')) pQuantity.value=1; if(document.getElementById('pQuantityField')) pQuantityField.style.display='block'; pPurchaseDate.value=today(); pOwner.value=currentName(); openModal('productModal');}; addFinanceBtn.onclick=openNewFinance; saveProductBtn.onclick=saveProduct; confirmSaleBtn.onclick=confirmSale; confirmDeliveryBtn.onclick=confirmDelivery; saveFinanceBtn.onclick=saveFinance; saveConfigBtn.onclick=()=>{localStorage.setItem('mactopus_supabase_config',JSON.stringify({url:supabaseUrl.value.trim(),key:supabaseKey.value.trim()})); alert('Настройки сохранены. Обнови страницу, после входа Realtime включится автоматически.');}; copySqlBtn.onclick=()=>navigator.clipboard.writeText(SQL).then(()=>alert('SQL скопирован')); search.oninput=renderProducts; statusFilter.onchange=renderProducts; financeFilter.onchange=renderFinance; if(document.getElementById('inventorySearch')) inventorySearch.oninput=renderInventory;
 demoSeedBtn.onclick=()=>{state={products:[{id:uid(),name:'iPhone 15 Pro 256',category:'iPhone',cost:76000,planned_sale_price:89000,purchase_date:today(),arrival_date:today(),status:'В продаже',created_by:'demo'},{id:uid(),name:'AirPods Pro 2',category:'AirPods',cost:14500,planned_sale_price:18500,purchase_date:today(),arrival_date:null,status:'В пути',created_by:'demo'}],finance:[],logs:[]}; state.finance=[{id:uid(),type:'Закупка',amount:-76000,date:today(),product_id:state.products[0].id,user_name:'demo',comment:'Демо закупка',created_at:new Date().toISOString()},{id:uid(),type:'Закупка',amount:-14500,date:today(),product_id:state.products[1].id,user_name:'demo',comment:'Демо закупка',created_at:new Date().toISOString()},{id:uid(),type:'Инвестиция',amount:150000,date:today(),user_name:'demo',comment:'Старт',created_at:new Date().toISOString()}]; state.logs=[{id:uid(),action:'Загрузка демо',user_name:'demo',details:'Стартовые данные',created_at:new Date().toISOString()}]; saveLocal(); renderAll();};
 exportJsonBtn.onclick=()=>{const backup={exported_at:new Date().toISOString(),exported_by:currentName(),version:'3.6.3',...state}; const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='mactopus_backup_'+new Date().toISOString().slice(0,10)+'.json'; a.click();};
 importJson.onchange=async(e)=>{const file=e.target.files[0]; if(!file) return; state=JSON.parse(await file.text()); saveLocal(); renderAll();};
