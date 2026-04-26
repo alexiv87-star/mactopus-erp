@@ -166,7 +166,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
 
 <div class="modal" id="loginModal"><div class="modalbox"><h2>Вход в Mactopus ERP</h2><div class="formgrid"><div class="field"><label>Email</label><input class="input" id="loginEmail" type="email" autocomplete="email" inputmode="email"></div><div class="field"><label>Пароль</label><input class="input" id="loginPassword" type="password" autocomplete="current-password"></div><div class="field"><label>&nbsp;</label><button class="btn" id="loginBtn" type="button" style="width:100%">Войти</button></div></div><div id="loginMessage" class="alert" style="display:none;margin-top:12px"></div><div class="alert" style="margin-top:12px">Вход только для пользователей, созданных в Supabase → Authentication → Users. Если с телефона кнопка не срабатывает, открой сайт в Safari/Chrome, не во встроенном браузере Telegram/WhatsApp.</div><button class="btn secondary" onclick="closeModal('loginModal')" style="margin-top:12px">Закрыть</button></div></div>
 
-<div class="modal" id="productModal"><div class="modalbox"><h2 id="productModalTitle">Товар</h2><input type="hidden" id="productId"><div class="formgrid"><div class="field"><label>Название</label><input class="input" id="pName"></div><div class="field"><label>Категория</label><input class="input" id="pCategory" placeholder="iPhone / AirPods / Mac"></div><div class="field"><label>Себестоимость за 1 шт.</label><input class="input" id="pCost" type="number"></div><div class="field"><label>Плановая цена продажи за 1 шт.</label><input class="input" id="pPlan" type="number"></div><div class="field" id="pQuantityField"><label>Количество, шт.</label><input class="input" id="pQuantity" type="number" min="1" step="1" value="1"></div><div class="field"><label>Дата закупки</label><input class="input" id="pPurchaseDate" type="date"></div><div class="field"><label>Дата поступления</label><input class="input" id="pArrivalDate" type="date"></div><div class="field"><label>Поставщик / источник</label><input class="input" id="pSource"></div><div class="field"><label>Ответственный</label><input class="input" id="pOwner"></div><div class="field"><label>Комментарий</label><input class="input" id="pComment"></div></div><div class="row" style="margin-top:14px"><button class="btn green" id="saveProductBtn">Сохранить</button><button class="btn secondary" onclick="closeModal('productModal')">Закрыть</button></div></div></div>
+<div class="modal" id="productModal"><div class="modalbox"><h2 id="productModalTitle">Товар</h2><input type="hidden" id="productId"><div class="formgrid"><div class="field"><label>Название</label><input class="input" id="pName"></div><div class="field"><label>Категория</label><input class="input" id="pCategory" placeholder="iPhone / AirPods / Mac"></div><div class="field"><label>Цвет</label><input class="input" id="pColor" placeholder="Midnight / Silver / Black"></div><div class="field"><label>Себестоимость за 1 шт.</label><input class="input" id="pCost" type="number"></div><div class="field"><label>Плановая цена продажи за 1 шт.</label><input class="input" id="pPlan" type="number"></div><div class="field" id="pQuantityField"><label>Количество, шт.</label><input class="input" id="pQuantity" type="number" min="1" step="1" value="1"></div><div class="field"><label>Дата закупки</label><input class="input" id="pPurchaseDate" type="date"></div><div class="field"><label>Дата поступления</label><input class="input" id="pArrivalDate" type="date"></div><div class="field"><label>Поставщик / источник</label><input class="input" id="pSource"></div><div class="field"><label>Ответственный</label><input class="input" id="pOwner"></div><div class="field"><label>Комментарий</label><input class="input" id="pComment"></div></div><div class="row" style="margin-top:14px"><button class="btn green" id="saveProductBtn">Сохранить</button><button class="btn secondary" onclick="closeModal('productModal')">Закрыть</button></div></div></div>
 
 <div class="modal" id="saleModal"><div class="modalbox"><h2>Продажа товара</h2><input type="hidden" id="saleProductId"><div class="formgrid"><div class="field"><label>Цена продажи</label><input class="input" id="salePrice" type="number"></div><div class="field"><label>Дата продажи</label><input class="input" id="saleDate" type="date"></div><div class="field"><label>Кто продал</label><input class="input" id="soldBy"></div></div><div class="row" style="margin-top:14px"><button class="btn green" id="confirmSaleBtn">Провести продажу</button><button class="btn secondary" onclick="closeModal('saleModal')">Закрыть</button></div></div></div>
 
@@ -182,6 +182,7 @@ create table if not exists public.products (
   id uuid primary key default gen_random_uuid(),
   name text not null,
   category text,
+  color text,
   cost numeric not null default 0,
   planned_sale_price numeric default 0,
   actual_sale_price numeric default 0,
@@ -272,9 +273,9 @@ function margin(p){ return productStatus(p)==='Продан' && Number(p.cost)>0
 function expectedPayment(p){ return Number(p.delivery_expected_price || p.planned_sale_price || p.actual_sale_price || 0); }
 function deliveryDays(p){ return p.delivery_date ? Math.max(0, daysBetween(p.delivery_date)) : 0; }
 function deliveryRiskClass(days){ return days>10?'risk-red':(days>5?'risk-yellow':'risk-green'); }
-function snapshotProduct(p){ if(!p) return {}; return {name:p.name||'', category:p.category||'', cost:Number(p.cost||0), planned_sale_price:Number(p.planned_sale_price||0), actual_sale_price:Number(p.actual_sale_price||0), purchase_date:p.purchase_date||null, arrival_date:p.arrival_date||null, delivery_date:p.delivery_date||null, delivery_service:p.delivery_service||'', tracking_number:p.tracking_number||'', delivery_expected_price:Number(p.delivery_expected_price||0), buyer_contact:p.buyer_contact||'', payment_date:p.payment_date||null, sale_date:p.sale_date||null, status:productStatus(p), archived:!!p.archived}; }
+function snapshotProduct(p){ if(!p) return {}; return {name:p.name||'', category:p.category||'', color:p.color||'', cost:Number(p.cost||0), planned_sale_price:Number(p.planned_sale_price||0), actual_sale_price:Number(p.actual_sale_price||0), purchase_date:p.purchase_date||null, arrival_date:p.arrival_date||null, delivery_date:p.delivery_date||null, delivery_service:p.delivery_service||'', tracking_number:p.tracking_number||'', delivery_expected_price:Number(p.delivery_expected_price||0), buyer_contact:p.buyer_contact||'', payment_date:p.payment_date||null, sale_date:p.sale_date||null, status:productStatus(p), archived:!!p.archived}; }
 function diffText(before={}, after={}){
-  const labels={name:'Название',category:'Категория',cost:'Себестоимость',planned_sale_price:'План продажи',actual_sale_price:'Цена продажи',purchase_date:'Дата закупки',arrival_date:'Дата поступления',delivery_date:'Дата отправки',delivery_service:'Доставка',tracking_number:'Трек',delivery_expected_price:'Ожидаемая сумма',buyer_contact:'Покупатель',payment_date:'Дата оплаты',sale_date:'Дата продажи',status:'Статус',archived:'Архив'};
+  const labels={name:'Название',category:'Категория',color:'Цвет',cost:'Себестоимость',planned_sale_price:'План продажи',actual_sale_price:'Цена продажи',purchase_date:'Дата закупки',arrival_date:'Дата поступления',delivery_date:'Дата отправки',delivery_service:'Доставка',tracking_number:'Трек',delivery_expected_price:'Ожидаемая сумма',buyer_contact:'Покупатель',payment_date:'Дата оплаты',sale_date:'Дата продажи',status:'Статус',archived:'Архив'};
   return Object.keys(labels).filter(k=>String(before[k] ?? '')!==String(after[k] ?? '')).map(k=>`${labels[k]}: ${before[k] ?? '—'} → ${after[k] ?? '—'}`).join('; ');
 }
 function displayDays(p){ if(!p.arrival_date) return '—'; return daysBetween(p.arrival_date, p.sale_date || today()); }
@@ -407,7 +408,7 @@ function renderDashboard(){
   document.getElementById('topProfitBody').innerHTML=top.map(p=>`<tr><td>${esc(p.name)}</td><td>${fmtRub(profit(p))}</td><td>${pct(margin(p))}</td><td>${displayDays(p)}</td><td>${esc(p.sold_by||'—')}</td></tr>`).join('') || '<tr><td colspan="5">Пока нет продаж</td></tr>';
   const modelMap={};
   sold.forEach(p=>{
-    const key=(p.name||'Без названия').trim()||'Без названия';
+    const key=((p.name||'Без названия').trim()||'Без названия') + (p.color ? ' · ' + p.color : '');
     if(!modelMap[key]) modelMap[key]={name:key, count:0, profit:0, revenue:0, cost:0, marginSum:0};
     modelMap[key].count += 1;
     modelMap[key].profit += profit(p);
@@ -459,7 +460,7 @@ function renderProducts(){
   let arr=[...state.products]; 
   arr=arr.filter(p=>{
     const st=productStatus(p); 
-    const text=(p.name+' '+(p.category||'')+' '+(p.owner||'')+' '+(p.buyer_contact||'')+' '+(p.tracking_number||'')).toLowerCase(); 
+    const text=(p.name+' '+(p.category||'')+' '+(p.color||'')+' '+(p.owner||'')+' '+(p.buyer_contact||'')+' '+(p.tracking_number||'')).toLowerCase(); 
     if(q && !text.includes(q)) return false; 
     if(f==='all') return true; 
     if(f==='stuck') return st==='В продаже' && daysBetween(p.arrival_date)>30; 
@@ -473,7 +474,7 @@ function renderProducts(){
     const deliveryInfo=st==='В доставке' ? `<br><span class="hint">Ожидаем: ${fmtRub(expectedPayment(p))}${p.tracking_number?' · '+esc(p.tracking_number):''}${p.buyer_contact?' · '+esc(p.buyer_contact):''}</span>` : '';
     const saleValue=st==='Продан'?fmtRub(p.actual_sale_price):(st==='В доставке'?fmtRub(expectedPayment(p)):'—');
     const responsible=esc(p.sold_by||p.owner||p.created_by||'—');
-    return `<tr><td>${String(p.id).slice(0,8)}</td><td><b>${esc(p.name)}</b><br><span class="hint">${esc(p.category||'')}</span>${deliveryInfo}</td><td><span class="status ${cls}">${st}</span></td><td>${p.purchase_date||'—'}</td><td>${p.arrival_date||'—'}</td><td>${fmtRub(p.cost)}</td><td>${saleValue}</td><td>${st==='Продан'?fmtRub(profit(p)):'—'}</td><td>${st==='Продан'?pct(margin(p)):'—'}</td><td class="${dcls}">${d}</td><td>${responsible}</td><td>${actionButtonsForProduct(p,st)}</td></tr>`
+    return `<tr><td>${String(p.id).slice(0,8)}</td><td><b>${esc(p.name)}</b><br><span class="hint">${esc(p.category||'')}${p.color ? ' · ' + esc(p.color) : ''}</span>${deliveryInfo}</td><td><span class="status ${cls}">${st}</span></td><td>${p.purchase_date||'—'}</td><td>${p.arrival_date||'—'}</td><td>${fmtRub(p.cost)}</td><td>${saleValue}</td><td>${st==='Продан'?fmtRub(profit(p)):'—'}</td><td>${st==='Продан'?pct(margin(p)):'—'}</td><td class="${dcls}">${d}</td><td>${responsible}</td><td>${actionButtonsForProduct(p,st)}</td></tr>`
   }).join('') || '<tr><td colspan="12">Нет товаров</td></tr>'; 
 }
 
@@ -491,8 +492,9 @@ function buildInventorySummary(){
     if(st==='Архив') return;
     const category=(p.category||'Без категории').trim()||'Без категории';
     const name=(p.name||'Без названия').trim()||'Без названия';
-    const key=category+'||'+name;
-    if(!groups[key]) groups[key]={key,category,name,stock:0,road:0,delivery:0,sold:0,total:0,stockCost:0,roadCost:0,deliveryCost:0,expected:0,revenue:0,profit:0,stuck:0,units:[]};
+    const color=(p.color||'').trim();
+    const key=category+'||'+name+'||'+color;
+    if(!groups[key]) groups[key]={key,category,name,color,stock:0,road:0,delivery:0,sold:0,total:0,stockCost:0,roadCost:0,deliveryCost:0,expected:0,revenue:0,profit:0,stuck:0,units:[]};
     const g=groups[key];
     g.units.push(p); g.total++;
     if(st==='В продаже'){ g.stock++; g.stockCost+=Number(p.cost||0); if(daysBetween(p.arrival_date)>30) g.stuck++; }
@@ -511,14 +513,14 @@ function inventorySummaryMatches(g){
   if(inventoryView==='stuck') return g.stuck>0;
   return true;
 }
-function openInventoryUnits(name, category){
+function openInventoryUnits(name, category, color){
   document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
   const btn=[...document.querySelectorAll('.nav button')].find(b=>b.dataset.tab==='products'); if(btn) btn.classList.add('active');
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.getElementById('products').classList.add('active');
   document.getElementById('title').textContent='Товары';
   document.getElementById('subtitle').textContent='Конкретные единицы выбранной складской позиции';
-  document.getElementById('search').value=name||'';
+  document.getElementById('search').value=[name||'', color||''].filter(Boolean).join(' ');
   document.getElementById('statusFilter').value='all';
   renderProducts();
 }
@@ -558,9 +560,9 @@ function renderInventory(){
   document.getElementById('inventoryTableTitle').textContent=titles[inventoryView]||'Сводка по остаткам';
   const q=(document.getElementById('inventorySearch')?.value||'').toLowerCase().trim();
   const groups=summary.filter(g=>{
-    if(q && !(g.category+' '+g.name).toLowerCase().includes(q)) return false;
+    if(q && !(g.category+' '+g.name+' '+(g.color||'')).toLowerCase().includes(q)) return false;
     return inventorySummaryMatches(g);
-  }).sort((a,b)=>a.category.localeCompare(b.category,'ru')||a.name.localeCompare(b.name,'ru'));
+  }).sort((a,b)=>a.category.localeCompare(b.category,'ru')||a.name.localeCompare(b.name,'ru')||(a.color||'').localeCompare((b.color||''),'ru'));
   const byCat={}; groups.forEach(g=>{(byCat[g.category] ||= []).push(g);});
   let total={stock:0,road:0,delivery:0,sold:0,total:0,stockCost:0,expected:0,revenue:0,profit:0};
   const rows=[];
@@ -572,7 +574,7 @@ function renderInventory(){
     rows.push('<tr class="summary-category"><td><div class="cat-title"><button class="btn secondary" style="padding:4px 8px" onclick="toggleInventoryCategory(\''+esc(cat)+'\')">'+(collapsed?'▶':'▼')+'</button><span>'+esc(cat)+'</span><span class="cat-count">'+items.length+'</span></div></td><td class="'+stockClass(c.stock)+'">'+c.stock+'</td><td>'+c.road+'</td><td>'+c.delivery+'</td><td class="risk-green">'+c.sold+'</td><td>'+c.total+'</td><td>'+fmtRub(c.stockCost)+'</td><td>'+fmtRub(c.expected)+'</td><td>'+fmtRub(c.revenue)+'</td><td>'+fmtRub(c.profit)+'</td><td></td></tr>');
     if(!collapsed){
       items.forEach(g=>{
-        rows.push('<tr class="summary-item"><td class="summary-name"><b>'+esc(g.name)+'</b><br><span class="hint">Единиц: '+g.total+(g.stuck?' · зависло '+g.stuck:'')+(g.stock===0?' · нет остатка':'')+'</span></td><td class="'+stockClass(g.stock)+'">'+g.stock+'</td><td>'+g.road+'</td><td>'+g.delivery+'</td><td class="risk-green">'+g.sold+'</td><td>'+g.total+'</td><td>'+fmtRub(g.stockCost)+'</td><td>'+fmtRub(g.expected)+'</td><td>'+fmtRub(g.revenue)+'</td><td>'+fmtRub(g.profit)+'</td><td class="summary-actions"><button class="btn secondary" onclick="openInventoryUnits(\''+esc(g.name)+'\',\''+esc(g.category)+'\')">Единицы</button></td></tr>');
+        rows.push('<tr class="summary-item"><td class="summary-name"><b>'+esc(g.name)+'</b><br><span class="hint">'+(g.color ? 'Цвет: '+esc(g.color)+' · ' : '')+'Единиц: '+g.total+(g.stuck?' · зависло '+g.stuck:'')+(g.stock===0?' · нет остатка':'')+'</span></td><td class="'+stockClass(g.stock)+'">'+g.stock+'</td><td>'+g.road+'</td><td>'+g.delivery+'</td><td class="risk-green">'+g.sold+'</td><td>'+g.total+'</td><td>'+fmtRub(g.stockCost)+'</td><td>'+fmtRub(g.expected)+'</td><td>'+fmtRub(g.revenue)+'</td><td>'+fmtRub(g.profit)+'</td><td class="summary-actions"><button class="btn secondary" onclick="openInventoryUnits(\''+esc(g.name)+'\',\''+esc(g.category)+'\',\''+esc(g.color||'')+'\')">Единицы</button></td></tr>');
       });
     }
   });
@@ -588,7 +590,7 @@ async function saveProduct(){
   const before = snapshotProduct(existing);
   const quantityInput = document.getElementById('pQuantity');
   const quantity = id ? 1 : Math.max(1, Math.floor(Number(quantityInput?.value || 1)));
-  const row={name:pName.value.trim(),category:pCategory.value.trim(),cost:Number(pCost.value)||0,planned_sale_price:Number(pPlan.value)||0,purchase_date:pPurchaseDate.value||null,arrival_date:pArrivalDate.value||null,source:pSource.value.trim(),owner:pOwner.value.trim(),comment:pComment.value.trim()};
+  const row={name:pName.value.trim(),category:pCategory.value.trim(),color:(document.getElementById('pColor')?.value||'').trim(),cost:Number(pCost.value)||0,planned_sale_price:Number(pPlan.value)||0,purchase_date:pPurchaseDate.value||null,arrival_date:pArrivalDate.value||null,source:pSource.value.trim(),owner:pOwner.value.trim(),comment:pComment.value.trim()};
   if(!row.name) return alert('Укажи название');
   if(row.cost<=0) return alert('Себестоимость за 1 шт. должна быть больше 0');
   if(quantity > 100) return alert('Слишком большое количество для одной партии. Максимум 100 шт.');
@@ -655,7 +657,7 @@ async function archiveProduct(id){
   const patch={archived:true,status:'Архив',updated_at:new Date().toISOString()};
   if(supabaseClient&&sessionUser){const {data,error}=await supabaseClient.from('products').update(patch).eq('id',id).is('sale_date',null).select().single(); if(error) return alert('Не удалось архивировать. Возможно, товар уже продан или изменён: '+error.message); await addLog('Архивирование товара',id,diffText(before, snapshotProduct(data)) || p.name);} else {p.archived=true; p.status='Архив'; saveLocal(); await addLog('Архивирование товара',id,diffText(before, snapshotProduct(p)) || p.name);}
   await loadData(); }
-function editProduct(id){const p=state.products.find(x=>x.id===id); productModalTitle.textContent='Редактировать товар'; productId.value=p.id; pName.value=p.name||''; pCategory.value=p.category||''; pCost.value=p.cost||0; pPlan.value=p.planned_sale_price||0; if(document.getElementById('pQuantity')) pQuantity.value=1; if(document.getElementById('pQuantityField')) pQuantityField.style.display='none'; pPurchaseDate.value=p.purchase_date||''; pArrivalDate.value=p.arrival_date||''; pSource.value=p.source||''; pOwner.value=p.owner||''; pComment.value=p.comment||''; openModal('productModal');}
+function editProduct(id){const p=state.products.find(x=>x.id===id); productModalTitle.textContent='Редактировать товар'; productId.value=p.id; pName.value=p.name||''; pCategory.value=p.category||''; if(document.getElementById('pColor')) pColor.value=p.color||''; pCost.value=p.cost||0; pPlan.value=p.planned_sale_price||0; if(document.getElementById('pQuantity')) pQuantity.value=1; if(document.getElementById('pQuantityField')) pQuantityField.style.display='none'; pPurchaseDate.value=p.purchase_date||''; pArrivalDate.value=p.arrival_date||''; pSource.value=p.source||''; pOwner.value=p.owner||''; pComment.value=p.comment||''; openModal('productModal');}
 function openSale(id){const p=state.products.find(x=>x.id===id); if(!p) return alert('Товар не найден'); const st=productStatus(p); if(st!=='В продаже' && st!=='В доставке') return alert('Продать можно только товар в продаже или в доставке'); if(p.sale_date||p.actual_sale_price) return alert('Этот товар уже отмечен как проданный'); saleProductId.value=id; salePrice.value=p.delivery_expected_price||p.planned_sale_price||''; saleDate.value=today(); soldBy.value=currentName(); openModal('saleModal');}
 function openDelivery(id){
   const p=state.products.find(x=>x.id===id); 
@@ -859,7 +861,7 @@ loginBtn.addEventListener('click', handleLogin);
 loginPassword.addEventListener('keydown', e=>{ if(e.key==='Enter') handleLogin(); });
 loginEmail.addEventListener('keydown', e=>{ if(e.key==='Enter') loginPassword.focus(); });
 logoutBtn.onclick=async()=>{ stopRealtime(); if(supabaseClient) await supabaseClient.auth.signOut(); sessionUser=null; await loadData(); };
-loginOpenBtn.onclick=()=>openModal('loginModal'); syncBtn.onclick=loadData; addProductBtn.onclick=()=>{productModalTitle.textContent='Добавить товар'; ['productId','pName','pCategory','pCost','pPlan','pPurchaseDate','pArrivalDate','pSource','pOwner','pComment'].forEach(id=>document.getElementById(id).value=''); if(document.getElementById('pQuantity')) pQuantity.value=1; if(document.getElementById('pQuantityField')) pQuantityField.style.display='block'; pPurchaseDate.value=today(); pOwner.value=currentName(); openModal('productModal');}; addFinanceBtn.onclick=()=>{fDate.value=today(); fAmount.value=''; fComment.value=''; openModal('financeModal');}; saveProductBtn.onclick=saveProduct; confirmSaleBtn.onclick=confirmSale; confirmDeliveryBtn.onclick=confirmDelivery; saveFinanceBtn.onclick=saveFinance; saveConfigBtn.onclick=()=>{localStorage.setItem('mactopus_supabase_config',JSON.stringify({url:supabaseUrl.value.trim(),key:supabaseKey.value.trim()})); alert('Настройки сохранены. Обнови страницу, после входа Realtime включится автоматически.');}; copySqlBtn.onclick=()=>navigator.clipboard.writeText(SQL).then(()=>alert('SQL скопирован')); search.oninput=renderProducts; statusFilter.onchange=renderProducts; financeFilter.onchange=renderFinance; if(document.getElementById('inventorySearch')) inventorySearch.oninput=renderInventory;
+loginOpenBtn.onclick=()=>openModal('loginModal'); syncBtn.onclick=loadData; addProductBtn.onclick=()=>{productModalTitle.textContent='Добавить товар'; ['productId','pName','pCategory','pColor','pCost','pPlan','pPurchaseDate','pArrivalDate','pSource','pOwner','pComment'].forEach(id=>document.getElementById(id).value=''); if(document.getElementById('pQuantity')) pQuantity.value=1; if(document.getElementById('pQuantityField')) pQuantityField.style.display='block'; pPurchaseDate.value=today(); pOwner.value=currentName(); openModal('productModal');}; addFinanceBtn.onclick=()=>{fDate.value=today(); fAmount.value=''; fComment.value=''; openModal('financeModal');}; saveProductBtn.onclick=saveProduct; confirmSaleBtn.onclick=confirmSale; confirmDeliveryBtn.onclick=confirmDelivery; saveFinanceBtn.onclick=saveFinance; saveConfigBtn.onclick=()=>{localStorage.setItem('mactopus_supabase_config',JSON.stringify({url:supabaseUrl.value.trim(),key:supabaseKey.value.trim()})); alert('Настройки сохранены. Обнови страницу, после входа Realtime включится автоматически.');}; copySqlBtn.onclick=()=>navigator.clipboard.writeText(SQL).then(()=>alert('SQL скопирован')); search.oninput=renderProducts; statusFilter.onchange=renderProducts; financeFilter.onchange=renderFinance; if(document.getElementById('inventorySearch')) inventorySearch.oninput=renderInventory;
 demoSeedBtn.onclick=()=>{state={products:[{id:uid(),name:'iPhone 15 Pro 256',category:'iPhone',cost:76000,planned_sale_price:89000,purchase_date:today(),arrival_date:today(),status:'В продаже',created_by:'demo'},{id:uid(),name:'AirPods Pro 2',category:'AirPods',cost:14500,planned_sale_price:18500,purchase_date:today(),arrival_date:null,status:'В пути',created_by:'demo'}],finance:[],logs:[]}; state.finance=[{id:uid(),type:'Закупка',amount:-76000,date:today(),product_id:state.products[0].id,user_name:'demo',comment:'Демо закупка',created_at:new Date().toISOString()},{id:uid(),type:'Закупка',amount:-14500,date:today(),product_id:state.products[1].id,user_name:'demo',comment:'Демо закупка',created_at:new Date().toISOString()},{id:uid(),type:'Инвестиция',amount:150000,date:today(),user_name:'demo',comment:'Старт',created_at:new Date().toISOString()}]; state.logs=[{id:uid(),action:'Загрузка демо',user_name:'demo',details:'Стартовые данные',created_at:new Date().toISOString()}]; saveLocal(); renderAll();};
 exportJsonBtn.onclick=()=>{const backup={exported_at:new Date().toISOString(),exported_by:currentName(),version:'3.6.3',...state}; const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='mactopus_backup_'+new Date().toISOString().slice(0,10)+'.json'; a.click();};
 importJson.onchange=async(e)=>{const file=e.target.files[0]; if(!file) return; state=JSON.parse(await file.text()); saveLocal(); renderAll();};
