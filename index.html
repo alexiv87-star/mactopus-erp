@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Mactopus ERP 3.9 — Delete / Supabase</title>
+<title>Mactopus ERP 4.0 — Category Summary / Supabase</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
@@ -32,7 +32,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
 <div class="app">
   <aside class="side">
     <div class="brand">Mactopus ERP</div>
-    <div class="sub">Версия 3.9 Delete/Supabase<br>3 пользователя, все с админским доступом. Полировка интерфейса: аккуратные KPI, статусы, таблицы, мобильная адаптация и сохранение всей текущей бизнес-логики.</div>
+    <div class="sub">Версия 4.0 Category Summary/Supabase<br>3 пользователя, все с админским доступом. Добавлена сводка одинаковых товаров по категориям: остаток, в пути, в доставке, продано и всего.</div>
     <div class="nav">
       <button class="active" data-tab="dashboard">📊 Дашборд</button>
       <button data-tab="products">📦 Товары</button>
@@ -41,7 +41,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
       <button data-tab="log">🧾 Журнал</button>
       <button data-tab="settings">⚙️ Настройки</button>
     </div>
-    <div class="footerNote">Realtime-версия: изменения подтягиваются без ручного обновления.<br><br><b style="color:#dbe7ff">3.9:</b> добавлено жёсткое удаление тестовых товаров вместе со связанными финоперациями и журналом.</div>
+    <div class="footerNote">Realtime-версия: изменения подтягиваются без ручного обновления.<br><br><b style="color:#dbe7ff">4.0:</b> добавлена логика группировки одинаковых товаров по категориям, как в Excel.</div>
   </aside>
   <main class="main">
     <div class="top">
@@ -78,6 +78,23 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
 
     <section id="products" class="section">
       <div class="toolbar"><div class="row"><input class="input" id="search" placeholder="Поиск товара" style="width:260px"><select class="select" id="statusFilter" style="width:190px"><option value="all">Все статусы</option><option>В пути</option><option>В продаже</option><option>В доставке</option><option>Продан</option><option>Архив</option><option value="stuck">Зависло > 30 дней</option><option value="lowmargin">Маржа < 15%</option></select></div><button class="btn green" id="addProductBtn">+ Добавить товар</button></div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="toolbar">
+          <div>
+            <h3 style="margin:0">Сводка одинаковых товаров</h3>
+            <div class="hint">Как в Excel: одинаковые товары собираются в одну строку. Остаток = доступно к продаже; отдельно видно «в пути» и «в доставке».</div>
+          </div>
+          <div class="row">
+            <button class="btn secondary" onclick="toggleCategorySummary()">Свернуть / развернуть</button>
+          </div>
+        </div>
+        <div class="tablewrap" id="categorySummaryWrap">
+          <table>
+            <thead><tr><th>Категория / товар</th><th>Цвет</th><th>Остаток</th><th>В пути</th><th>В доставке</th><th>Продано</th><th>Всего</th></tr></thead>
+            <tbody id="productSummaryBody"></tbody>
+          </table>
+        </div>
+      </div>
       <div class="tablewrap"><table><thead><tr><th>ID</th><th>Название</th><th>Статус</th><th>Закупка</th><th>Поступление</th><th>Себестоимость</th><th>Продажа</th><th>Прибыль</th><th>Маржа</th><th>Дни</th><th>Кто создал</th><th>Действия</th></tr></thead><tbody id="productsBody"></tbody></table></div>
     </section>
 
@@ -102,7 +119,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
 
     <section id="finance" class="section">
       <div class="toolbar"><div class="row"><select class="select" id="financeFilter" style="width:220px"><option value="all">Все операции</option><option>Закупка</option><option>Доставка</option><option>Продажа</option><option>Инвестиция</option><option>Вывод</option><option>Корректировка</option></select></div><button class="btn green" id="addFinanceBtn">+ Финоперация</button></div>
-      <div class="tablewrap"><table><thead><tr><th>Дата</th><th>Тип</th><th>Сумма</th><th>Товар</th><th>Пользователь</th><th>Комментарий</th><th>Действия</th></tr></thead><tbody id="financeBody"></tbody></table></div>
+      <div class="tablewrap"><table><thead><tr><th>Дата</th><th>Тип</th><th>Сумма</th><th>Товар</th><th>Пользователь</th><th>Комментарий</th></tr></thead><tbody id="financeBody"></tbody></table></div>
     </section>
 
     <section id="log" class="section">
@@ -115,7 +132,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
         <div class="card"><h3>Подключение Supabase</h3><div class="field"><label>SUPABASE_URL</label><input class="input" id="supabaseUrl" placeholder="https://xxxxx.supabase.co"></div><div class="field"><label>SUPABASE_ANON_KEY</label><textarea id="supabaseKey" placeholder="anon public key"></textarea></div><div class="row"><button class="btn" id="saveConfigBtn">Сохранить настройки</button><button class="btn secondary" id="demoSeedBtn">Загрузить демо-данные</button></div><div class="alert" style="margin-top:12px">После сохранения обнови страницу. Ключ anon можно использовать на фронте. Service role key сюда не вставлять.</div></div>
         <div class="card"><h3>SQL для Supabase</h3><div class="code" id="sqlBox"></div><button class="btn secondary" id="copySqlBtn" style="margin-top:10px">Скопировать SQL</button></div>
       </div>
-      <div class="card" style="margin-top:16px"><h3>Резерв и очистка</h3><div class="row"><button class="btn secondary" id="exportJsonBtn">Экспорт JSON</button><input type="file" id="importJson" accept="application/json" class="input" style="max-width:320px"><button class="btn danger" onclick="clearAllData()">Очистить все данные</button></div><div class="alert" style="margin-top:12px">Удаление нужно только для чистки тестовой базы. Перед массовой очисткой лучше сделать экспорт JSON.</div></div>
+      <div class="card" style="margin-top:16px"><h3>Резерв</h3><div class="row"><button class="btn secondary" id="exportJsonBtn">Экспорт JSON</button><input type="file" id="importJson" accept="application/json" class="input" style="max-width:320px"></div></div>
     </section>
   </main>
 </div>
@@ -310,7 +327,7 @@ async function addFinance(row){
   const item={id:uid(),date:row.date||today(),type:row.type,amount:normalizeFinanceAmount(row.type, row.amount),product_id:row.product_id||null,user_name:currentName(),comment:row.comment||'',created_at:new Date().toISOString()};
   if(supabaseClient && sessionUser){ const {error}=await supabaseClient.from('finance').insert({date:item.date,type:item.type,amount:item.amount,product_id:item.product_id,user_name:item.user_name,comment:item.comment}); if(error) throw error; } else { state.finance.unshift(item); saveLocal(); }
 }
-function renderAll(){ renderDashboard(); renderProducts(); renderInventory(); renderFinance(); renderLog(); document.getElementById('userPill').textContent=sessionUser?.email||'Демо-пользователь'; document.getElementById('loginOpenBtn').style.display=sessionUser?'none':''; document.getElementById('logoutBtn').style.display=sessionUser?'':'none'; }
+function renderAll(){ renderDashboard(); renderProducts(); renderProductSummary(); renderInventory(); renderFinance(); renderLog(); document.getElementById('userPill').textContent=sessionUser?.email||'Демо-пользователь'; document.getElementById('loginOpenBtn').style.display=sessionUser?'none':''; document.getElementById('logoutBtn').style.display=sessionUser?'':'none'; }
 function renderDashboard(){
   const products=state.products||[], finance=state.finance||[];
   const cash=finance.reduce((s,x)=>s+Number(x.amount||0),0);
@@ -393,6 +410,82 @@ function renderDashboard(){
   const ctx=document.getElementById('financeChart'); if(chart) chart.destroy(); 
   chart=new Chart(ctx,{type:'line',data:{labels,datasets:[{label:'Cash',data,tension:.35}]},options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#98a2b3'},grid:{color:'#1f2937'}},y:{ticks:{color:'#98a2b3'},grid:{color:'#1f2937'}}}}});
 }
+
+let categorySummaryCollapsed = false;
+function toggleCategorySummary(){
+  categorySummaryCollapsed = !categorySummaryCollapsed;
+  const wrap=document.getElementById('categorySummaryWrap');
+  if(wrap) wrap.style.display = categorySummaryCollapsed ? 'none' : '';
+}
+function deriveProductCategory(p){
+  const explicit=(p.category||'').trim();
+  if(explicit) return explicit;
+  const n=(p.name||'').toLowerCase();
+  if(n.includes('блок') || n.includes('140w') || n.includes('30w') || n.includes('35w')) return 'Блоки питания';
+  if(n.includes('кабель') || n.includes('magsafe') || n.includes('type-c')) return 'Кабели';
+  if(n.includes('macbook')) return 'MacBook';
+  if(n.includes('pitaka')) return 'Pitaka';
+  if(n.includes('iphone') || n.includes('айфон')) return 'iPhone';
+  if(n.includes('airpods')) return 'AirPods';
+  return 'Прочее';
+}
+function normalizeModelName(name){
+  let n=String(name||'').trim();
+  n=n.replace(/^Всего\s*\((.*)\)\s*$/i,'$1');
+  n=n.replace(/\s+/g,' ');
+  return n || 'Без названия';
+}
+function extractColor(p){
+  const src=[p.color,p.colour,p.comment,p.name].filter(Boolean).join(' ').toLowerCase();
+  const colors=[
+    ['black','черный'],['чёрный','черный'],['white','белый'],['silver','серебро'],['серебро','серебро'],
+    ['blue','синий'],['синий','синий'],['pink','розовый'],['розовый','розовый'],['green','зеленый'],
+    ['зелёный','зеленый'],['зеленый','зеленый'],['purple','фиолетовый'],['фиолетовый','фиолетовый'],
+    ['midnight','midnight'],['starlight','starlight'],['space gray','space gray'],['space grey','space gray'],
+    ['natural','natural'],['titanium','titanium']
+  ];
+  for(const [k,v] of colors){ if(src.includes(k)) return v; }
+  return '';
+}
+function renderProductSummary(){
+  const body=document.getElementById('productSummaryBody');
+  if(!body) return;
+  const products=(state.products||[]).filter(p=>productStatus(p)!=='Архив');
+  const groups={};
+  products.forEach(p=>{
+    const cat=deriveProductCategory(p);
+    const model=normalizeModelName(p.name);
+    const color=extractColor(p);
+    groups[cat] ||= {};
+    const key=model+'||'+color;
+    groups[cat][key] ||= {model,color,stock:0,road:0,delivery:0,sold:0,total:0};
+    const st=productStatus(p);
+    if(st==='В продаже') groups[cat][key].stock++;
+    else if(st==='В пути') groups[cat][key].road++;
+    else if(st==='В доставке') groups[cat][key].delivery++;
+    else if(st==='Продан') groups[cat][key].sold++;
+    groups[cat][key].total++;
+  });
+  const cats=Object.keys(groups).sort((a,b)=>a.localeCompare(b,'ru'));
+  let html='';
+  let grand={stock:0,road:0,delivery:0,sold:0,total:0};
+  cats.forEach(cat=>{
+    const rows=Object.values(groups[cat]).sort((a,b)=>a.model.localeCompare(b.model,'ru'));
+    const sum=rows.reduce((s,r)=>({stock:s.stock+r.stock,road:s.road+r.road,delivery:s.delivery+r.delivery,sold:s.sold+r.sold,total:s.total+r.total}),{stock:0,road:0,delivery:0,sold:0,total:0});
+    grand.stock+=sum.stock; grand.road+=sum.road; grand.delivery+=sum.delivery; grand.sold+=sum.sold; grand.total+=sum.total;
+    html+=`<tr style="background:rgba(90,200,250,.07)"><td><b>▾ ${esc(cat)}</b> <span class="pill" style="padding:4px 8px;margin-left:6px">${rows.length}</span></td><td></td><td><b>${sum.stock}</b></td><td><b>${sum.road}</b></td><td><b>${sum.delivery}</b></td><td class="risk-green"><b>${sum.sold}</b></td><td><b>${sum.total}</b></td></tr>`;
+    rows.forEach(r=>{
+      html+=`<tr><td style="padding-left:34px">${esc(r.model)}</td><td>${esc(r.color||'')}</td><td><b>${r.stock}</b></td><td>${r.road}</td><td>${r.delivery}</td><td class="risk-green">${r.sold}</td><td><b>${r.total}</b></td></tr>`;
+    });
+  });
+  if(cats.length){
+    html+=`<tr style="background:rgba(255,255,255,.06)"><td><b>Итого</b></td><td></td><td><b>${grand.stock}</b></td><td><b>${grand.road}</b></td><td><b>${grand.delivery}</b></td><td class="risk-green"><b>${grand.sold}</b></td><td><b>${grand.total}</b></td></tr>`;
+  } else {
+    html='<tr><td colspan="7">Нет товаров</td></tr>';
+  }
+  body.innerHTML=html;
+}
+
 function renderProducts(){ 
   const q=document.getElementById('search').value.toLowerCase(); 
   const f=document.getElementById('statusFilter').value; 
@@ -411,7 +504,7 @@ function renderProducts(){
     const cls=st==='В пути'?'st-road':st==='В продаже'?'st-stock':st==='В доставке'?'st-delivery':st==='Продан'?'st-sold':'st-arch'; 
     const d=displayDays(p); const dcls=d==='—'?'':d>30?'risk-red':d>15?'risk-yellow':'risk-green'; 
     const deliveryInfo=st==='В доставке' ? `<br><span class="hint">Ожидаем: ${fmtRub(expectedPayment(p))}${p.tracking_number?' · '+esc(p.tracking_number):''}</span>` : '';
-    return `<tr><td>${String(p.id).slice(0,8)}</td><td><b>${esc(p.name)}</b><br><span class="hint">${esc(p.category||'')}</span>${deliveryInfo}</td><td><span class="status ${cls}">${st}</span></td><td>${p.purchase_date||'—'}</td><td>${p.arrival_date||'—'}</td><td>${fmtRub(p.cost)}</td><td>${st==='Продан'?fmtRub(p.actual_sale_price):(st==='В доставке'?fmtRub(expectedPayment(p)):'—')}</td><td>${st==='Продан'?fmtRub(profit(p)):'—'}</td><td>${st==='Продан'?pct(margin(p)):'—'}</td><td class="${dcls}">${d}</td><td>${esc(p.created_by||p.owner||'—')}</td><td><div class="row"><button class="btn secondary" onclick="editProduct('${p.id}')">✏️</button>${st==='В пути'?`<button class="btn yellow" onclick="markArrived('${p.id}')">Поступил</button>`:''}${st==='В продаже'?`<button class="btn yellow" onclick="openDelivery('${p.id}')">Отправить</button>`:''}${st==='В продаже'?`<button class="btn green" onclick="openSale('${p.id}')">Продать сразу</button>`:''}${st==='В доставке'?`<button class="btn green" onclick="paymentReceived('${p.id}')">Оплата получена</button><button class="btn secondary" onclick="returnFromDelivery('${p.id}')">Возврат</button>`:''}${st!=='Архив' && st!=='Продан'?`<button class="btn danger" onclick="archiveProduct('${p.id}')">Архив</button>`:''}<button class="btn danger" onclick="deleteProduct('${p.id}')">Удалить</button></div></td></tr>`
+    return `<tr><td>${String(p.id).slice(0,8)}</td><td><b>${esc(p.name)}</b><br><span class="hint">${esc(p.category||'')}</span>${deliveryInfo}</td><td><span class="status ${cls}">${st}</span></td><td>${p.purchase_date||'—'}</td><td>${p.arrival_date||'—'}</td><td>${fmtRub(p.cost)}</td><td>${st==='Продан'?fmtRub(p.actual_sale_price):(st==='В доставке'?fmtRub(expectedPayment(p)):'—')}</td><td>${st==='Продан'?fmtRub(profit(p)):'—'}</td><td>${st==='Продан'?pct(margin(p)):'—'}</td><td class="${dcls}">${d}</td><td>${esc(p.created_by||p.owner||'—')}</td><td><div class="row"><button class="btn secondary" onclick="editProduct('${p.id}')">✏️</button>${st==='В пути'?`<button class="btn yellow" onclick="markArrived('${p.id}')">Поступил</button>`:''}${st==='В продаже'?`<button class="btn yellow" onclick="openDelivery('${p.id}')">Отправить</button>`:''}${st==='В продаже'?`<button class="btn green" onclick="openSale('${p.id}')">Продать сразу</button>`:''}${st==='В доставке'?`<button class="btn green" onclick="paymentReceived('${p.id}')">Оплата получена</button><button class="btn secondary" onclick="returnFromDelivery('${p.id}')">Возврат</button>`:''}${st!=='Архив' && st!=='Продан'?`<button class="btn danger" onclick="archiveProduct('${p.id}')">Архив</button>`:''}</div></td></tr>`
   }).join('') || '<tr><td colspan="12">Нет товаров</td></tr>'; 
 }
 
@@ -471,10 +564,10 @@ function renderInventory(){
       st==='В продаже'?`<button class="btn yellow" onclick="openDelivery('${p.id}')">Отправить</button><button class="btn green" onclick="openSale('${p.id}')">Продать</button>`:
       st==='В доставке'?`<button class="btn green" onclick="paymentReceived('${p.id}')">Оплата получена</button><button class="btn secondary" onclick="returnFromDelivery('${p.id}')">Возврат</button>`:
       `<button class="btn secondary" onclick="editProduct('${p.id}')">Открыть</button>`;
-    return `<tr><td><b>${esc(p.name)}</b><br><span class="hint">${String(p.id).slice(0,8)}</span></td><td>${esc(p.category||'—')}</td><td><span class="status ${cls}">${st}</span></td><td>${p.purchase_date||'—'}</td><td>${p.arrival_date||'—'}</td><td>${fmtRub(p.cost)}</td><td>${fmtRub(st==='В доставке'?expectedPayment(p):(p.planned_sale_price||p.actual_sale_price||0))}</td><td class="${dcls}">${d}</td><td>${deliveryText}</td><td>${esc(p.owner||p.created_by||'—')}</td><td><div class="row">${actions}<button class="btn danger" onclick="deleteProduct('${p.id}')">Удалить</button></div></td></tr>`;
+    return `<tr><td><b>${esc(p.name)}</b><br><span class="hint">${String(p.id).slice(0,8)}</span></td><td>${esc(p.category||'—')}</td><td><span class="status ${cls}">${st}</span></td><td>${p.purchase_date||'—'}</td><td>${p.arrival_date||'—'}</td><td>${fmtRub(p.cost)}</td><td>${fmtRub(st==='В доставке'?expectedPayment(p):(p.planned_sale_price||p.actual_sale_price||0))}</td><td class="${dcls}">${d}</td><td>${deliveryText}</td><td>${esc(p.owner||p.created_by||'—')}</td><td><div class="row">${actions}</div></td></tr>`;
   }).join('') || '<tr><td colspan="11">Нет товаров</td></tr>';
 }
-function renderFinance(){const f=document.getElementById('financeFilter').value; let arr=state.finance.filter(x=>f==='all'||x.type===f); document.getElementById('financeBody').innerHTML=arr.map(x=>{const p=state.products.find(p=>p.id===x.product_id); return `<tr><td>${x.date||'—'}</td><td>${esc(x.type)}</td><td><b>${fmtRub(x.amount)}</b></td><td>${esc(p?.name||'—')}</td><td>${esc(x.user_name||'—')}</td><td>${esc(x.comment||'')}</td><td><button class="btn danger" onclick="deleteFinance('${x.id}')">Удалить</button></td></tr>`}).join('')||'<tr><td colspan="7">Нет операций</td></tr>'; }
+function renderFinance(){const f=document.getElementById('financeFilter').value; let arr=state.finance.filter(x=>f==='all'||x.type===f); document.getElementById('financeBody').innerHTML=arr.map(x=>{const p=state.products.find(p=>p.id===x.product_id); return `<tr><td>${x.date||'—'}</td><td>${esc(x.type)}</td><td><b>${fmtRub(x.amount)}</b></td><td>${esc(p?.name||'—')}</td><td>${esc(x.user_name||'—')}</td><td>${esc(x.comment||'')}</td></tr>`}).join('')||'<tr><td colspan="6">Нет операций</td></tr>';}
 function renderLog(){document.getElementById('logBody').innerHTML=(state.logs||[]).map(x=>{const p=state.products.find(p=>p.id===x.product_id); return `<tr><td>${new Date(x.created_at).toLocaleString('ru-RU')}</td><td>${esc(x.action)}</td><td>${esc(x.user_name||'—')}</td><td>${esc(p?.name||'—')}</td><td>${esc(x.details||'')}</td></tr>`}).join('')||'<tr><td colspan="5">Журнал пуст</td></tr>';}
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
 async function saveProduct(){
@@ -528,68 +621,6 @@ async function archiveProduct(id){
   const patch={archived:true,status:'Архив',updated_at:new Date().toISOString()};
   if(supabaseClient&&sessionUser){const {data,error}=await supabaseClient.from('products').update(patch).eq('id',id).is('sale_date',null).select().single(); if(error) return alert('Не удалось архивировать. Возможно, товар уже продан или изменён: '+error.message); await addLog('Архивирование товара',id,diffText(before, snapshotProduct(data)) || p.name);} else {p.archived=true; p.status='Архив'; saveLocal(); await addLog('Архивирование товара',id,diffText(before, snapshotProduct(p)) || p.name);}
   await loadData(); }
-
-
-async function deleteFinance(id){
-  const item=(state.finance||[]).find(f=>f.id===id);
-  if(!item) return alert('Финансовая операция не найдена');
-  const text=`${item.date||'—'} · ${item.type||'—'} · ${fmtRub(item.amount||0)}${item.comment?' · '+item.comment:''}`;
-  if(!confirm('Удалить финансовую операцию?\n\n'+text+'\n\nЭто изменит Cash и дашборд.')) return;
-  if(!confirm('Подтверди удаление ещё раз. Действие необратимо.')) return;
-  if(supabaseClient && sessionUser){
-    const { error } = await supabaseClient.from('finance').delete().eq('id', id);
-    if(error){ alert('Ошибка удаления финансовой операции: '+error.message); return; }
-    await addLog('Удаление финоперации', item.product_id || null, `Удалена операция: ${item.type}; сумма: ${fmtRub(item.amount)}; дата: ${item.date||'—'}; комментарий: ${item.comment||'—'}`);
-  } else {
-    state.finance = state.finance.filter(f=>f.id!==id);
-    await addLog('Удаление финоперации', item.product_id || null, `Удалена операция: ${item.type}; сумма: ${fmtRub(item.amount)}; дата: ${item.date||'—'}; комментарий: ${item.comment||'—'}`);
-    saveLocal();
-  }
-  await loadData();
-}
-
-async function deleteProduct(id){
-  const p=state.products.find(p=>p.id===id);
-  if(!p) return alert('Товар не найден');
-  const msg = `ЖЁСТКО удалить товар «${p.name}»?\n\nБудут удалены:\n— карточка товара;\n— связанные финоперации;\n— связанные записи журнала.\n\nЭто действие нельзя отменить.`;
-  if(!confirm(msg)) return;
-  const check = prompt('Для подтверждения напиши: УДАЛИТЬ');
-  if(check !== 'УДАЛИТЬ') return alert('Удаление отменено');
-
-  if(supabaseClient && sessionUser){
-    const f = await supabaseClient.from('finance').delete().eq('product_id', id);
-    if(f.error) return alert('Не удалось удалить финоперации: '+f.error.message);
-    const l = await supabaseClient.from('activity_log').delete().eq('product_id', id);
-    if(l.error) return alert('Не удалось удалить журнал: '+l.error.message);
-    const d = await supabaseClient.from('products').delete().eq('id', id);
-    if(d.error) return alert('Не удалось удалить товар: '+d.error.message);
-  } else {
-    state.products = state.products.filter(x=>x.id!==id);
-    state.finance = state.finance.filter(x=>x.product_id!==id);
-    state.logs = state.logs.filter(x=>x.product_id!==id);
-    saveLocal();
-  }
-  await loadData();
-}
-
-async function clearAllData(){
-  const msg='Удалить ВСЕ товары, финоперации и журнал? Это полная очистка базы.';
-  if(!confirm(msg)) return;
-  const check = prompt('Для подтверждения полной очистки напиши: ОЧИСТИТЬ');
-  if(check !== 'ОЧИСТИТЬ') return alert('Очистка отменена');
-  if(supabaseClient && sessionUser){
-    const f = await supabaseClient.from('finance').delete().neq('id','00000000-0000-0000-0000-000000000000');
-    if(f.error) return alert('Не удалось очистить финансы: '+f.error.message);
-    const l = await supabaseClient.from('activity_log').delete().neq('id','00000000-0000-0000-0000-000000000000');
-    if(l.error) return alert('Не удалось очистить журнал: '+l.error.message);
-    const p = await supabaseClient.from('products').delete().neq('id','00000000-0000-0000-0000-000000000000');
-    if(p.error) return alert('Не удалось очистить товары: '+p.error.message);
-  } else {
-    state={products:[], finance:[], logs:[]};
-    saveLocal();
-  }
-  await loadData();
-}
 function editProduct(id){const p=state.products.find(x=>x.id===id); productModalTitle.textContent='Редактировать товар'; productId.value=p.id; pName.value=p.name||''; pCategory.value=p.category||''; pCost.value=p.cost||0; pPlan.value=p.planned_sale_price||0; pPurchaseDate.value=p.purchase_date||''; pArrivalDate.value=p.arrival_date||''; pSource.value=p.source||''; pOwner.value=p.owner||''; pComment.value=p.comment||''; openModal('productModal');}
 function openSale(id){const p=state.products.find(x=>x.id===id); if(!p) return alert('Товар не найден'); const st=productStatus(p); if(st!=='В продаже' && st!=='В доставке') return alert('Продать можно только товар в продаже или в доставке'); if(p.sale_date||p.actual_sale_price) return alert('Этот товар уже отмечен как проданный'); saleProductId.value=id; salePrice.value=p.delivery_expected_price||p.planned_sale_price||''; saleDate.value=today(); soldBy.value=currentName(); openModal('saleModal');}
 function openDelivery(id){
@@ -679,7 +710,7 @@ async function confirmSale(){
   closeModal('saleModal'); await loadData();}
 function normalizeFinanceAmount(type, value){ const raw = Number(value) || 0; const abs = Math.abs(raw); if(["Вывод","Закупка","Расход","Комиссия"].includes(type)) return -abs; if(["Инвестиция","Продажа"].includes(type)) return abs; return raw; }
 async function saveFinance(){ const rawAmount=Number(fAmount.value)||0; if(!rawAmount) return alert("Укажи сумму"); const type=fType.value; const amount=normalizeFinanceAmount(type, rawAmount); await addFinance({type,amount,date:fDate.value||today(),comment:fComment.value}); await addLog("Финансовая операция",null,`${type}: ${fmtRub(amount)}`); closeModal("financeModal"); await loadData(); }
-window.editProduct=editProduct; window.openSale=openSale; window.openDelivery=openDelivery; window.paymentReceived=paymentReceived; window.returnFromDelivery=returnFromDelivery; window.markArrived=markArrived; window.archiveProduct=archiveProduct; window.deleteProduct=deleteProduct; window.deleteFinance=deleteFinance; window.clearAllData=clearAllData;
+window.editProduct=editProduct; window.openSale=openSale; window.openDelivery=openDelivery; window.paymentReceived=paymentReceived; window.returnFromDelivery=returnFromDelivery; window.markArrived=markArrived; window.archiveProduct=archiveProduct;
 async function authCheck(){
   if(!supabaseClient) return;
   try{
