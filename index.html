@@ -56,7 +56,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
       <button data-tab="log">🧾 Журнал</button>
       <button data-tab="settings">⚙️ Настройки</button>
     </div>
-    <div class="footerNote">Realtime-версия: изменения подтягиваются без ручного обновления.<br><br><b style="color:#dbe7ff">3.7:</b> удобный экран товаров: быстрые фильтры, улучшенные действия и более понятная операционная таблица без изменения логики базы.</div>
+    <div class="footerNote">Realtime-версия: изменения подтягиваются без ручного обновления.<br><br><b style="color:#dbe7ff">4.5:</b> добавлено массовое назначение цвета для старых товаров и фильтр «без цвета».</div>
   </aside>
   <main class="main">
     <div class="top">
@@ -102,8 +102,9 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
         <button class="btn secondary" onclick="quickFilter('stuck')">Зависло</button>
         <button class="btn secondary" onclick="quickFilter('lowmargin')">Маржа &lt; 15%</button>
       </div>
-      <div class="toolbar"><div class="row"><input class="input" id="search" placeholder="Поиск: модель, категория, покупатель, трек" style="width:320px"><select class="select" id="statusFilter" style="width:190px"><option value="all">Все статусы</option><option>В пути</option><option>В продаже</option><option>В доставке</option><option>Продан</option><option>Архив</option><option value="stuck">Зависло > 30 дней</option><option value="lowmargin">Маржа < 15%</option></select></div></div>
-      <div class="tablewrap"><table><thead><tr><th>ID</th><th>Название</th><th>Статус</th><th>Закупка</th><th>Поступление</th><th>Себестоимость</th><th>Продажа / ожидание</th><th>Прибыль</th><th>Маржа</th><th>Дни</th><th>Ответственный</th><th>Действия</th></tr></thead><tbody id="productsBody"></tbody></table></div>
+      <div class="toolbar"><div class="row"><input class="input" id="search" placeholder="Поиск: модель, категория, цвет, покупатель, трек" style="width:320px"><select class="select" id="statusFilter" style="width:210px"><option value="all">Все статусы</option><option>В пути</option><option>В продаже</option><option>В доставке</option><option>Продан</option><option>Архив</option><option value="colorless">Без цвета</option><option value="stuck">Зависло > 30 дней</option><option value="lowmargin">Маржа < 15%</option></select></div><button class="btn green" id="addProductBtn">+ Добавить товар</button></div>
+      <div class="card" style="margin-bottom:14px;padding:14px"><div class="row" style="justify-content:space-between"><div class="hint">Выбрано товаров: <b id="selectedCount">0</b>. Для старых импортированных позиций можно быстро назначить цвет пачкой.</div><div class="row"><button class="btn secondary" onclick="selectVisibleProducts()">Выбрать видимые</button><button class="btn yellow" onclick="bulkSetColor()">🎨 Назначить цвет</button><button class="btn secondary" onclick="clearProductSelection()">Снять выбор</button></div></div></div>
+      <div class="tablewrap"><table><thead><tr><th style="width:44px">✓</th><th>ID</th><th>Название</th><th>Статус</th><th>Закупка</th><th>Поступление</th><th>Себестоимость</th><th>Продажа / ожидание</th><th>Прибыль</th><th>Маржа</th><th>Дни</th><th>Ответственный</th><th>Действия</th></tr></thead><tbody id="productsBody"></tbody></table></div>
     </section>
 
     <section id="inventory" class="section">
@@ -443,6 +444,36 @@ function quickFilter(status){
   if(select){ select.value=status; }
   renderProducts();
 }
+let selectedProductIds = new Set();
+let visibleProductIds = [];
+function updateSelectedCount(){ const el=document.getElementById('selectedCount'); if(el) el.textContent=selectedProductIds.size; }
+function toggleProductSelection(id, checked){ if(checked) selectedProductIds.add(id); else selectedProductIds.delete(id); updateSelectedCount(); }
+function selectVisibleProducts(){ visibleProductIds.forEach(id=>selectedProductIds.add(id)); renderProducts(); }
+function clearProductSelection(){ selectedProductIds.clear(); renderProducts(); }
+async function bulkSetColor(){
+  const ids=[...selectedProductIds];
+  if(!ids.length) return alert('Сначала выбери товары галочками');
+  const color=prompt('Какой цвет назначить выбранным товарам? Например: Midnight / Silver / Space Gray / Starlight');
+  if(color===null) return;
+  const value=color.trim() || null;
+  if(!confirm(`Назначить цвет "${value||'пусто'}" для ${ids.length} товар(ов)?`)) return;
+  if(supabaseClient && sessionUser){
+    const {error}=await supabaseClient.from('products').update({color:value, updated_at:new Date().toISOString()}).in('id', ids);
+    if(error) return alert('Ошибка назначения цвета: '+error.message);
+    await addLog('Массовое назначение цвета', null, `Цвет: ${value||'пусто'}; товаров: ${ids.length}`);
+  } else {
+    state.products.forEach(p=>{ if(ids.includes(p.id)) p.color=value; });
+    await addLog('Массовое назначение цвета', null, `Цвет: ${value||'пусто'}; товаров: ${ids.length}`);
+    saveLocal();
+  }
+  selectedProductIds.clear();
+  await loadData();
+}
+window.toggleProductSelection=toggleProductSelection;
+window.selectVisibleProducts=selectVisibleProducts;
+window.clearProductSelection=clearProductSelection;
+window.bulkSetColor=bulkSetColor;
+
 function actionButtonsForProduct(p, st){
   const id=p.id;
   return `<div class="actionRow">
@@ -463,10 +494,12 @@ function renderProducts(){
     const text=(p.name+' '+(p.category||'')+' '+(p.color||'')+' '+(p.owner||'')+' '+(p.buyer_contact||'')+' '+(p.tracking_number||'')).toLowerCase(); 
     if(q && !text.includes(q)) return false; 
     if(f==='all') return true; 
+    if(f==='colorless') return !String(p.color||'').trim();
     if(f==='stuck') return st==='В продаже' && daysBetween(p.arrival_date)>30; 
     if(f==='lowmargin') return st==='Продан' && margin(p)<.15; 
     return st===f;
   });
+  visibleProductIds = arr.map(p=>p.id);
   document.getElementById('productsBody').innerHTML=arr.map(p=>{
     const st=productStatus(p); 
     const cls=st==='В пути'?'st-road':st==='В продаже'?'st-stock':st==='В доставке'?'st-delivery':st==='Продан'?'st-sold':'st-arch'; 
@@ -474,8 +507,10 @@ function renderProducts(){
     const deliveryInfo=st==='В доставке' ? `<br><span class="hint">Ожидаем: ${fmtRub(expectedPayment(p))}${p.tracking_number?' · '+esc(p.tracking_number):''}${p.buyer_contact?' · '+esc(p.buyer_contact):''}</span>` : '';
     const saleValue=st==='Продан'?fmtRub(p.actual_sale_price):(st==='В доставке'?fmtRub(expectedPayment(p)):'—');
     const responsible=esc(p.sold_by||p.owner||p.created_by||'—');
-    return `<tr><td>${String(p.id).slice(0,8)}</td><td><b>${esc(p.name)}</b><br><span class="hint">${esc(p.category||'')}${p.color ? ' · ' + esc(p.color) : ''}</span>${deliveryInfo}</td><td><span class="status ${cls}">${st}</span></td><td>${p.purchase_date||'—'}</td><td>${p.arrival_date||'—'}</td><td>${fmtRub(p.cost)}</td><td>${saleValue}</td><td>${st==='Продан'?fmtRub(profit(p)):'—'}</td><td>${st==='Продан'?pct(margin(p)):'—'}</td><td class="${dcls}">${d}</td><td>${responsible}</td><td>${actionButtonsForProduct(p,st)}</td></tr>`
-  }).join('') || '<tr><td colspan="12">Нет товаров</td></tr>'; 
+    const checked = selectedProductIds.has(p.id) ? 'checked' : '';
+    return `<tr><td><input type="checkbox" ${checked} onchange="toggleProductSelection('${p.id}', this.checked)"></td><td>${String(p.id).slice(0,8)}</td><td><b>${esc(p.name)}</b><br><span class="hint">${esc(p.category||'')}${p.color ? ' · ' + esc(p.color) : ' · цвет не указан'}</span>${deliveryInfo}</td><td><span class="status ${cls}">${st}</span></td><td>${p.purchase_date||'—'}</td><td>${p.arrival_date||'—'}</td><td>${fmtRub(p.cost)}</td><td>${saleValue}</td><td>${st==='Продан'?fmtRub(profit(p)):'—'}</td><td>${st==='Продан'?pct(margin(p)):'—'}</td><td class="${dcls}">${d}</td><td>${responsible}</td><td>${actionButtonsForProduct(p,st)}</td></tr>`
+  }).join('') || '<tr><td colspan="13">Нет товаров</td></tr>'; 
+  updateSelectedCount();
 }
 
 let inventoryView='all';
