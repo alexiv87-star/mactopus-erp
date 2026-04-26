@@ -67,7 +67,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
     <section id="dashboard" class="section active">
       <div class="grid kpis">
         <div class="card kpi"><div class="label">Cash</div><div class="value" id="kCash">0 ₽</div><div class="small">Финансовый остаток</div></div>
-        <div class="card kpi"><div class="label">Прибыль</div><div class="value" id="kProfit">0 ₽</div><div class="small">По проданным товарам</div></div>
+        <div class="card kpi"><div class="label">Прибыль</div><div class="value" id="kProfit">0 ₽</div><div class="small">По проданным товарам</div></div><div class="card kpi"><div class="label">Расходы</div><div class="value" id="kExpenses">0 ₽</div><div class="small">Реклама и прочие издержки</div></div>
         <div class="card kpi"><div class="label">В товаре</div><div class="value" id="kStockMoney">0 ₽</div><div class="small">Себестоимость остатков</div></div>
         <div class="card kpi"><div class="label">В пути</div><div class="value" id="kRoad">0</div><div class="small">Куплено, но не поступило</div></div>
         <div class="card kpi"><div class="label">Ожидаем оплату</div><div class="value" id="kDeliveryMoney">0 ₽</div><div class="small" id="kDeliveryCount">0 товаров в доставке</div></div>
@@ -146,7 +146,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
 
 
     <section id="finance" class="section">
-      <div class="toolbar"><div class="row"><select class="select" id="financeFilter" style="width:220px"><option value="all">Все операции</option><option>Закупка</option><option>Доставка</option><option>Продажа</option><option>Инвестиция</option><option>Вывод</option><option>Корректировка</option></select></div><button class="btn green" id="addFinanceBtn">+ Финоперация</button></div>
+      <div class="toolbar"><div class="row"><select class="select" id="financeFilter" style="width:220px"><option value="all">Все операции</option><option>Закупка</option><option>Доставка</option><option>Продажа</option><option>Инвестиция</option><option>Вывод</option><option>Корректировка</option><option>Расход</option><option>Реклама</option><option>Комиссия</option><option>Упаковка</option><option>Доставка за свой счёт</option></select></div><button class="btn green" id="addFinanceBtn">+ Финоперация</button></div>
       <div class="tablewrap"><table><thead><tr><th>Дата</th><th>Тип</th><th>Сумма</th><th>Товар</th><th>Пользователь</th><th>Комментарий</th><th>Действие</th></tr></thead><tbody id="financeBody"></tbody></table></div>
     </section>
 
@@ -173,7 +173,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
 
 <div class="modal" id="deliveryModal"><div class="modalbox"><h2>Отправка покупателю</h2><input type="hidden" id="deliveryProductId"><div class="formgrid"><div class="field"><label>Дата отправки</label><input class="input" id="deliveryDate" type="date"></div><div class="field"><label>Ожидаемая сумма оплаты</label><input class="input" id="deliveryExpectedPrice" type="number"></div><div class="field"><label>Служба доставки</label><input class="input" id="deliveryService" placeholder="СДЭК / Авито / Boxberry"></div><div class="field"><label>Трек-номер</label><input class="input" id="deliveryTrack"></div><div class="field"><label>Покупатель / контакт</label><input class="input" id="deliveryBuyer"></div><div class="field"><label>Комментарий</label><input class="input" id="deliveryComment"></div></div><div class="alert" style="margin-top:12px">Отправка не создаёт выручку. Деньги фиксируются только после кнопки «Оплата получена».</div><div class="row" style="margin-top:14px"><button class="btn green" id="confirmDeliveryBtn">Отправить покупателю</button><button class="btn secondary" onclick="closeModal('deliveryModal')">Закрыть</button></div></div></div>
 
-<div class="modal" id="financeModal"><div class="modalbox"><h2>Финансовая операция</h2><div class="formgrid"><div class="field"><label>Тип</label><select class="select" id="fType"><option>Инвестиция</option><option>Вывод</option><option>Корректировка</option><option>Закупка</option><option>Доставка</option><option>Продажа</option></select></div><div class="field"><label>Сумма</label><input class="input" id="fAmount" type="number"></div><div class="field"><label>Дата</label><input class="input" id="fDate" type="date"></div><div class="field" style="grid-column:1/-1"><label>Комментарий</label><input class="input" id="fComment"></div></div><div class="row" style="margin-top:14px"><button class="btn green" id="saveFinanceBtn">Сохранить</button><button class="btn secondary" onclick="closeModal('financeModal')">Закрыть</button></div></div></div>
+<div class="modal" id="financeModal"><div class="modalbox"><h2>Финансовая операция</h2><div class="formgrid"><div class="field"><label>Тип</label><select class="select" id="fType"><option>Инвестиция</option><option>Вывод</option><option>Корректировка</option><option>Закупка</option><option>Доставка</option><option>Продажа</option><option>Расход</option><option>Реклама</option><option>Комиссия</option><option>Упаковка</option><option>Доставка за свой счёт</option></select></div><div class="field"><label>Сумма</label><input class="input" id="fAmount" type="number"></div><div class="field"><label>Дата</label><input class="input" id="fDate" type="date"></div><div class="field" style="grid-column:1/-1"><label>Комментарий</label><input class="input" id="fComment" placeholder="Например: реклама Avito, комиссия, упаковка"></div></div><div class="alert" style="margin-top:12px">Расходы, реклама, комиссии, упаковка и доставка за свой счёт автоматически уменьшают Cash.</div><div class="row" style="margin-top:14px"><button class="btn green" id="saveFinanceBtn">Сохранить</button><button class="btn secondary" onclick="closeModal('financeModal')">Закрыть</button></div></div></div>
 
 <script>
 const SQL = `-- Mactopus ERP 2.0 / Supabase schema
@@ -360,6 +360,8 @@ function renderAll(){ renderDashboard(); renderProducts(); renderInventory(); re
 function renderDashboard(){
   const products=state.products||[], finance=state.finance||[];
   const cash=finance.reduce((s,x)=>s+Number(x.amount||0),0);
+  const expenseTypes=['Расход','Издержки','Реклама','Комиссия','Упаковка','Доставка за свой счёт'];
+  const expenses=finance.filter(x=>expenseTypes.includes(x.type)).reduce((s,x)=>s+Math.abs(Number(x.amount||0)),0);
   const sold=products.filter(p=>productStatus(p)==='Продан');
   const stock=products.filter(p=>productStatus(p)==='В продаже');
   const road=products.filter(p=>productStatus(p)==='В пути');
@@ -378,7 +380,8 @@ function renderDashboard(){
   const avgMargin=sold.length?sold.reduce((s,p)=>s+margin(p),0)/sold.length:0;
   const stuck=stock.filter(p=>daysBetween(p.arrival_date)>30).length;
   document.getElementById('kCash').textContent=fmtRub(cash); 
-  document.getElementById('kProfit').textContent=fmtRub(totalProfit); 
+  document.getElementById('kProfit').textContent=fmtRub(totalProfit);
+  const kExpensesEl=document.getElementById('kExpenses'); if(kExpensesEl) kExpensesEl.textContent=fmtRub(expenses); 
   document.getElementById('kStockMoney').textContent=fmtRub(stockMoney); 
   document.getElementById('kRoad').textContent=road.length; 
   document.getElementById('kMargin').textContent=pct(avgMargin); 
@@ -836,7 +839,7 @@ async function deleteProduct(id){
   }
   await loadData();
 }
-function normalizeFinanceAmount(type, value){ const raw = Number(value) || 0; const abs = Math.abs(raw); if(["Вывод","Закупка","Расход","Комиссия"].includes(type)) return -abs; if(["Инвестиция","Продажа"].includes(type)) return abs; return raw; }
+function normalizeFinanceAmount(type, value){ const raw = Number(value) || 0; const abs = Math.abs(raw); if(["Вывод","Закупка","Расход","Издержки","Реклама","Комиссия","Упаковка","Доставка за свой счёт"].includes(type)) return -abs; if(["Инвестиция","Продажа"].includes(type)) return abs; return raw; }
 async function saveFinance(){ const rawAmount=Number(fAmount.value)||0; if(!rawAmount) return alert("Укажи сумму"); const type=fType.value; const amount=normalizeFinanceAmount(type, rawAmount); await addFinance({type,amount,date:fDate.value||today(),comment:fComment.value}); await addLog("Финансовая операция",null,`${type}: ${fmtRub(amount)}`); closeModal("financeModal"); await loadData(); }
 window.editProduct=editProduct; window.openSale=openSale; window.openDelivery=openDelivery; window.paymentReceived=paymentReceived; window.returnFromDelivery=returnFromDelivery; window.markArrived=markArrived; window.archiveProduct=archiveProduct; window.cancelSale=cancelSale; window.deleteProduct=deleteProduct; window.deleteFinance=deleteFinance;
 async function authCheck(){
