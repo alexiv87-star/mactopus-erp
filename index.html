@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Mactopus ERP 4.1 — Сводка товаров PRO / Supabase</title>
+<title>Mactopus ERP 3.7 — Products Pro / Supabase</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
@@ -23,19 +23,20 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
 .app{display:grid;grid-template-columns:280px minmax(0,1fr);min-height:100vh}.side{border-right:1px solid rgba(255,255,255,.08);background:rgba(10,14,22,.78);backdrop-filter:blur(18px);padding:24px;position:sticky;top:0;height:100vh;z-index:5}.brand{font-size:25px;font-weight:900;letter-spacing:.1px;line-height:1}.brand:after{content:"";display:block;width:54px;height:4px;border-radius:999px;background:linear-gradient(90deg,var(--blue),var(--violet));margin-top:13px}.sub{font-size:12px;color:var(--muted);margin-top:14px;line-height:1.5}.nav{margin-top:28px;display:grid;gap:9px}.nav button{width:100%;text-align:left;border:1px solid transparent;background:transparent;color:var(--muted2);padding:12px 13px;border-radius:15px;cursor:pointer;font-size:14px;font-weight:700;transition:.18s ease}.nav button:hover{background:rgba(255,255,255,.055);border-color:rgba(255,255,255,.09);color:#fff;transform:translateX(2px)}.nav button.active{background:linear-gradient(135deg,rgba(90,200,250,.18),rgba(191,90,242,.11));border-color:rgba(90,200,250,.34);color:#fff;box-shadow:0 8px 26px rgba(90,200,250,.08)}.main{padding:28px 32px 48px;min-width:0}.top{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:22px}.h1{font-size:32px;font-weight:900;letter-spacing:-.5px}.hint{color:var(--muted);font-size:13px;margin-top:6px;line-height:1.45}.userbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.pill{border:1px solid rgba(255,255,255,.09);background:rgba(26,35,51,.76);border-radius:999px;padding:8px 12px;color:var(--muted2);font-size:12px;font-weight:700}.pill.live{color:#9affb1;border-color:rgba(48,209,88,.35);background:rgba(48,209,88,.10)}.pill.warn{color:#ffd098;border-color:rgba(255,159,10,.35);background:rgba(255,159,10,.10)}.pulse{animation:pulse .9s ease-out}@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(90,200,250,.45)}100%{box-shadow:0 0 0 12px rgba(90,200,250,0)}}
 .btn{border:0;background:linear-gradient(135deg,var(--blue),#7bd7ff);color:#06111b;font-weight:900;padding:10px 14px;border-radius:13px;cursor:pointer;box-shadow:0 8px 18px rgba(90,200,250,.16);transition:.16s ease;white-space:nowrap}.btn:hover{filter:brightness(1.06);transform:translateY(-1px)}.btn.secondary{background:rgba(32,42,61,.92);color:var(--text);border:1px solid rgba(255,255,255,.09);box-shadow:none}.btn.danger{background:linear-gradient(135deg,var(--red),#ff746c);color:#fff}.btn.green{background:linear-gradient(135deg,var(--green),#75e98f);color:#061008}.btn.yellow{background:linear-gradient(135deg,var(--yellow),#ffe477);color:#161006}.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}.grid{display:grid;gap:16px}.kpis{grid-template-columns:repeat(auto-fit,minmax(210px,1fr));align-items:stretch}.kpis .card{min-height:136px}.card{background:linear-gradient(180deg,rgba(25,34,50,.9),rgba(14,20,31,.92));border:1px solid rgba(255,255,255,.075);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);position:relative;overflow:hidden}.card:before{content:"";position:absolute;inset:0 0 auto 0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent)}.card h3{margin:0 0 13px;font-size:17px;letter-spacing:-.2px}.kpi .label{font-size:12px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.04em}.kpi .value{font-size:25px;font-weight:950;margin-top:9px;letter-spacing:-.45px}.kpi .small{font-size:12px;color:var(--muted);margin-top:7px;line-height:1.35}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.section{display:none}.section.active{display:block}.toolbar{display:flex;justify-content:space-between;gap:14px;align-items:center;margin-bottom:14px}.input,.select,textarea{width:100%;background:rgba(8,12,19,.9);border:1px solid rgba(255,255,255,.09);border-radius:13px;color:var(--text);padding:11px 12px;outline:none;transition:.15s ease}.input:focus,.select:focus,textarea:focus{border-color:rgba(90,200,250,.62);box-shadow:0 0 0 3px rgba(90,200,250,.10)}textarea{min-height:76px;resize:vertical}.formgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.field label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px 2px;font-weight:800}.tablewrap{overflow:auto;border:1px solid rgba(255,255,255,.08);border-radius:18px;background:rgba(8,12,19,.45)}table{width:100%;border-collapse:separate;border-spacing:0;min-width:1000px}th,td{padding:12px 13px;border-bottom:1px solid rgba(255,255,255,.065);font-size:13px;text-align:left;vertical-align:middle}th{color:var(--muted2);font-size:11px;background:rgba(23,31,45,.96);position:sticky;top:0;z-index:2;text-transform:uppercase;letter-spacing:.045em}td{color:#eaf1ff}tr:hover td{background:rgba(90,200,250,.045)}.status{padding:6px 10px;border-radius:999px;font-size:12px;font-weight:900;display:inline-flex;align-items:center;gap:5px;border:1px solid transparent}.miniStat{display:flex;justify-content:space-between;gap:12px;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:12px;background:rgba(8,12,19,.45)}.miniStat b{font-size:18px}.muted{color:var(--muted)}.st-road{background:rgba(255,159,10,.16);color:#ffd098;border-color:rgba(255,159,10,.24)}.st-stock{background:rgba(90,200,250,.14);color:#9be4ff;border-color:rgba(90,200,250,.25)}.st-sold{background:rgba(48,209,88,.14);color:#9affb1;border-color:rgba(48,209,88,.22)}.st-delivery{background:rgba(191,90,242,.16);color:#e8c7ff;border-color:rgba(191,90,242,.24)}.st-arch{background:rgba(152,162,179,.14);color:#c4ccd7;border-color:rgba(152,162,179,.18)}.risk-red{color:#ff8b84;font-weight:950}.risk-yellow{color:#ffe07a;font-weight:950}.risk-green{color:#8cffaa;font-weight:950}.modal{position:fixed;inset:0;background:rgba(0,0,0,.68);backdrop-filter:blur(12px);display:none;align-items:center;justify-content:center;padding:20px;z-index:20}.modal.show{display:flex}.modalbox{max-width:940px;width:100%;max-height:90vh;overflow:auto;background:linear-gradient(180deg,#151d2b,#0f1520);border:1px solid rgba(255,255,255,.10);border-radius:26px;padding:22px;box-shadow:0 28px 100px rgba(0,0,0,.58)}.split{display:grid;grid-template-columns:1.15fr .85fr;gap:16px}.alert{padding:13px 14px;border:1px solid rgba(255,255,255,.08);background:rgba(32,42,61,.72);border-radius:16px;color:var(--muted2);font-size:13px;line-height:1.45}.setup{display:grid;grid-template-columns:1fr 1fr;gap:16px}.code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:#070a0f;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px;white-space:pre-wrap;color:#dbe7ff;font-size:12px;overflow:auto}.footerNote{margin-top:24px;color:var(--muted);font-size:12px;line-height:1.45}.mobileOnly{display:none}
 
-.products-summary-mode #productsSummaryModeBtn,
-.products-list-mode #productsListModeBtn{background:linear-gradient(135deg,rgba(90,200,250,.22),rgba(191,90,242,.13));border-color:rgba(90,200,250,.38);color:#fff}
-.summary-category td{background:rgba(90,200,250,.085)!important;font-weight:900;border-top:1px solid rgba(255,255,255,.10)}
-.summary-category .cat-title{display:flex;align-items:center;gap:10px}
-.summary-category .cat-toggle{font-size:16px;color:#cfefff}
-.summary-category .cat-count{font-size:11px;color:var(--muted2);border:1px solid rgba(255,255,255,.12);padding:3px 8px;border-radius:999px;background:rgba(255,255,255,.06)}
-.summary-item td{background:rgba(8,12,19,.25)}
-.summary-item .summary-name{padding-left:24px}
-.summary-total td{font-weight:950;background:rgba(255,255,255,.06)!important}
-.stock-zero{color:#ff8b84;font-weight:950}
-.stock-low{color:#ffe07a;font-weight:950}
-.stock-ok{color:#8cffaa;font-weight:950}
+.quickFilters{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+.quickFilters .btn{padding:8px 11px}
 
+.inventory-summary-table .summary-category td{background:rgba(90,200,250,.085)!important;font-weight:900;border-top:1px solid rgba(255,255,255,.10)}
+.inventory-summary-table .summary-item td{background:rgba(8,12,19,.25)}
+.inventory-summary-table .summary-item .summary-name{padding-left:26px}
+.inventory-summary-table .summary-total td{font-weight:950;background:rgba(255,255,255,.06)!important}
+.cat-title{display:flex;align-items:center;gap:10px}
+.cat-count{font-size:11px;color:var(--muted2);border:1px solid rgba(255,255,255,.12);padding:3px 8px;border-radius:999px;background:rgba(255,255,255,.06)}
+.stock-zero{color:#ff8b84;font-weight:950}.stock-low{color:#ffe07a;font-weight:950}.stock-ok{color:#8cffaa;font-weight:950}
+.summary-actions .btn{padding:6px 10px}
+.actionRow{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.actionRow .btn{padding:7px 10px;font-size:12px}
+@media(max-width:560px){.quickFilters .btn{width:auto}.actionRow .btn{width:auto}}
 ::-webkit-scrollbar{height:10px;width:10px}::-webkit-scrollbar-track{background:rgba(255,255,255,.04)}::-webkit-scrollbar-thumb{background:rgba(154,167,187,.35);border-radius:999px}::-webkit-scrollbar-thumb:hover{background:rgba(154,167,187,.55)}
 @media(max-width:1280px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:920px){.app{grid-template-columns:1fr}.side{position:relative;height:auto;padding:18px}.nav{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:18px}.main{padding:18px}.top{display:grid}.userbar{justify-content:flex-start}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.formgrid,.setup,.split{grid-template-columns:1fr}.toolbar{display:grid;align-items:stretch}.tablewrap{border-radius:15px}th,td{padding:11px 10px}.mobileOnly{display:block}.h1{font-size:27px}.card{padding:15px}}
@@ -46,7 +47,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
 <div class="app">
   <aside class="side">
     <div class="brand">Mactopus ERP</div>
-    <div class="sub">Версия 4.1 Category Summary PRO/Supabase<br>3 пользователя, все с админским доступом. В разделе «Товары» добавлен режим сводки: одинаковые позиции собираются по категориям, как в Excel.</div>
+    <div class="sub">Версия 3.7 Products Pro/Supabase<br>3 пользователя, все с админским доступом. Полировка интерфейса: аккуратные KPI, статусы, таблицы, мобильная адаптация и сохранение всей текущей бизнес-логики.</div>
     <div class="nav">
       <button class="active" data-tab="dashboard">📊 Дашборд</button>
       <button data-tab="products">📦 Товары</button>
@@ -55,7 +56,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
       <button data-tab="log">🧾 Журнал</button>
       <button data-tab="settings">⚙️ Настройки</button>
     </div>
-    <div class="footerNote">Realtime-версия: изменения подтягиваются без ручного обновления.<br><br><b style="color:#dbe7ff">4.1:</b> добавлена сводка товаров по категориям: остаток, в пути, в доставке, продано и всего.</div>
+    <div class="footerNote">Realtime-версия: изменения подтягиваются без ручного обновления.<br><br><b style="color:#dbe7ff">3.7:</b> удобный экран товаров: быстрые фильтры, улучшенные действия и более понятная операционная таблица без изменения логики базы.</div>
   </aside>
   <main class="main">
     <div class="top">
@@ -91,41 +92,61 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
     </section>
 
     <section id="products" class="section">
-      <div class="toolbar">
-        <div class="row">
-          <button class="btn secondary" id="productsListModeBtn" onclick="setProductsView('list')">Список единиц</button>
-          <button class="btn secondary" id="productsSummaryModeBtn" onclick="setProductsView('summary')">Сводка по товарам</button>
-          <input class="input" id="search" placeholder="Поиск товара / категории" style="width:260px">
-          <select class="select" id="statusFilter" style="width:190px"><option value="all">Все статусы</option><option>В пути</option><option>В продаже</option><option>В доставке</option><option>Продан</option><option>Архив</option><option value="stuck">Зависло > 30 дней</option><option value="lowmargin">Маржа < 15%</option><option value="onlystock">Только остаток</option><option value="zerostock">Нулевой остаток</option></select>
-        </div>
-        <button class="btn green" id="addProductBtn">+ Добавить товар</button>
+      <div class="toolbar"><div><h2 style="margin:0">Товары</h2><div class="hint">Операционный экран: поиск, быстрые фильтры и действия по статусу товара.</div></div><button class="btn green" id="addProductBtn">+ Добавить товар</button></div>
+      <div class="quickFilters">
+        <button class="btn secondary" onclick="quickFilter('all')">Все</button>
+        <button class="btn secondary" onclick="quickFilter('В продаже')">В продаже</button>
+        <button class="btn secondary" onclick="quickFilter('В доставке')">В доставке</button>
+        <button class="btn secondary" onclick="quickFilter('В пути')">В пути</button>
+        <button class="btn secondary" onclick="quickFilter('Продан')">Продано</button>
+        <button class="btn secondary" onclick="quickFilter('stuck')">Зависло</button>
+        <button class="btn secondary" onclick="quickFilter('lowmargin')">Маржа &lt; 15%</button>
       </div>
-      <div class="alert" id="productsSummaryHint" style="display:none;margin-bottom:14px">Сводка группирует одинаковые позиции по названию и категории: видно остаток, товары в пути, доставке и продажи. Клик «Единицы» откроет конкретные товарные карточки.</div>
-      <div class="tablewrap"><table><thead id="productsHead"><tr><th>ID</th><th>Название</th><th>Статус</th><th>Закупка</th><th>Поступление</th><th>Себестоимость</th><th>Продажа</th><th>Прибыль</th><th>Маржа</th><th>Дни</th><th>Кто создал</th><th>Действия</th></tr></thead><tbody id="productsBody"></tbody></table></div>
+      <div class="toolbar"><div class="row"><input class="input" id="search" placeholder="Поиск: модель, категория, покупатель, трек" style="width:320px"><select class="select" id="statusFilter" style="width:190px"><option value="all">Все статусы</option><option>В пути</option><option>В продаже</option><option>В доставке</option><option>Продан</option><option>Архив</option><option value="stuck">Зависло > 30 дней</option><option value="lowmargin">Маржа < 15%</option></select></div></div>
+      <div class="tablewrap"><table><thead><tr><th>ID</th><th>Название</th><th>Статус</th><th>Закупка</th><th>Поступление</th><th>Себестоимость</th><th>Продажа / ожидание</th><th>Прибыль</th><th>Маржа</th><th>Дни</th><th>Ответственный</th><th>Действия</th></tr></thead><tbody id="productsBody"></tbody></table></div>
     </section>
 
     <section id="inventory" class="section">
-      <div class="toolbar"><div><h2 style="margin:0">Остатки товаров</h2><div class="hint">Складская логика как в single-user версии: в наличии, в пути, продано, стоимость остатков и зависшие позиции.</div></div><div class="row"><button class="btn secondary" onclick="setInventoryView('stock')">В наличии</button><button class="btn secondary" onclick="setInventoryView('road')">В пути</button><button class="btn secondary" onclick="setInventoryView('delivery')">В доставке</button><button class="btn secondary" onclick="setInventoryView('sold')">Продано</button><button class="btn secondary" onclick="setInventoryView('stuck')">Зависло</button></div></div>
+      <div class="toolbar">
+        <div>
+          <h2 style="margin:0">Остатки товаров</h2>
+          <div class="hint">Складская сводка: одинаковые товары группируются по категории и названию. Конкретные действия выполняются в разделе «Товары».</div>
+        </div>
+        <div class="row">
+          <button class="btn secondary" onclick="setInventoryView('all')">Все</button>
+          <button class="btn secondary" onclick="setInventoryView('stock')">Есть остаток</button>
+          <button class="btn secondary" onclick="setInventoryView('road')">В пути</button>
+          <button class="btn secondary" onclick="setInventoryView('delivery')">В доставке</button>
+          <button class="btn secondary" onclick="setInventoryView('zerostock')">Нулевой остаток</button>
+          <button class="btn secondary" onclick="setInventoryView('stuck')">Зависло</button>
+        </div>
+      </div>
       <div class="grid kpis" style="margin-bottom:16px">
         <div class="card kpi"><div class="label">В наличии</div><div class="value" id="iStockCount">0</div><div class="small" id="iStockMoney">0 ₽</div></div>
         <div class="card kpi"><div class="label">В пути</div><div class="value" id="iRoadCount">0</div><div class="small" id="iRoadMoney">0 ₽</div></div>
         <div class="card kpi"><div class="label">В доставке</div><div class="value" id="iDeliveryCount">0</div><div class="small" id="iDeliveryMoney">0 ₽ ожидаем</div></div>
         <div class="card kpi"><div class="label">Продано</div><div class="value" id="iSoldCount">0</div><div class="small" id="iSoldRevenue">0 ₽ выручка</div></div>
-        <div class="card kpi"><div class="label">Заморожено</div><div class="value" id="iFrozenMoney">0 ₽</div><div class="small">В наличии + в пути</div></div>
+        <div class="card kpi"><div class="label">Заморожено</div><div class="value" id="iFrozenMoney">0 ₽</div><div class="small">В наличии + в пути + доставка</div></div>
         <div class="card kpi"><div class="label">Зависло >30 дней</div><div class="value" id="iStuckCount">0</div><div class="small" id="iStuckMoney">0 ₽</div></div>
-        <div class="card kpi"><div class="label">Потенциал продажи</div><div class="value" id="iPotential">0 ₽</div><div class="small">Плановая цена остатков</div></div>
+        <div class="card kpi"><div class="label">Потенциал продажи</div><div class="value" id="iPotential">0 ₽</div><div class="small">План + ожидаемые оплаты</div></div>
       </div>
       <div class="grid split" style="margin-bottom:16px">
-        <div class="card"><h3>Остатки по категориям</h3><div class="tablewrap"><table><thead><tr><th>Категория</th><th>В наличии</th><th>В пути / доставка</th><th>Себестоимость</th><th>План/ожидаемая выручка</th></tr></thead><tbody id="inventoryCategoryBody"></tbody></table></div></div>
         <div class="card"><h3>Сигналы по складу</h3><div id="inventorySignals" class="grid"></div></div>
+        <div class="card"><h3>Как использовать</h3><div class="alert">«Остатки» — управленческая сводка по складу. Кнопка «Единицы» переносит в раздел «Товары» и показывает конкретные карточки для продажи, отправки, возврата или удаления.</div></div>
       </div>
-      <div class="card"><div class="toolbar"><h3 style="margin:0" id="inventoryTableTitle">Товары в наличии</h3><input class="input" id="inventorySearch" placeholder="Поиск по остаткам" style="max-width:280px"></div><div class="tablewrap"><table><thead><tr><th>Товар</th><th>Категория</th><th>Статус</th><th>Закупка</th><th>Поступление</th><th>Себестоимость</th><th>План/ожидаем</th><th>Дней</th><th>Доставка</th><th>Ответственный</th><th>Действие</th></tr></thead><tbody id="inventoryBody"></tbody></table></div></div>
+      <div class="card">
+        <div class="toolbar">
+          <h3 style="margin:0" id="inventoryTableTitle">Сводка по остаткам</h3>
+          <input class="input" id="inventorySearch" placeholder="Поиск: категория или товар" style="max-width:320px">
+        </div>
+        <div class="tablewrap inventory-summary-table"><table><thead><tr><th>Категория / товар</th><th>Остаток</th><th>В пути</th><th>В доставке</th><th>Продано</th><th>Всего</th><th>Себестоимость остатка</th><th>Ожидаем оплату</th><th>Выручка</th><th>Прибыль</th><th>Действие</th></tr></thead><tbody id="inventoryBody"></tbody></table></div>
+      </div>
     </section>
 
 
     <section id="finance" class="section">
       <div class="toolbar"><div class="row"><select class="select" id="financeFilter" style="width:220px"><option value="all">Все операции</option><option>Закупка</option><option>Доставка</option><option>Продажа</option><option>Инвестиция</option><option>Вывод</option><option>Корректировка</option></select></div><button class="btn green" id="addFinanceBtn">+ Финоперация</button></div>
-      <div class="tablewrap"><table><thead><tr><th>Дата</th><th>Тип</th><th>Сумма</th><th>Товар</th><th>Пользователь</th><th>Комментарий</th></tr></thead><tbody id="financeBody"></tbody></table></div>
+      <div class="tablewrap"><table><thead><tr><th>Дата</th><th>Тип</th><th>Сумма</th><th>Товар</th><th>Пользователь</th><th>Комментарий</th><th>Действие</th></tr></thead><tbody id="financeBody"></tbody></table></div>
     </section>
 
     <section id="log" class="section">
@@ -145,7 +166,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
 
 <div class="modal" id="loginModal"><div class="modalbox"><h2>Вход в Mactopus ERP</h2><div class="formgrid"><div class="field"><label>Email</label><input class="input" id="loginEmail" type="email" autocomplete="email" inputmode="email"></div><div class="field"><label>Пароль</label><input class="input" id="loginPassword" type="password" autocomplete="current-password"></div><div class="field"><label>&nbsp;</label><button class="btn" id="loginBtn" type="button" style="width:100%">Войти</button></div></div><div id="loginMessage" class="alert" style="display:none;margin-top:12px"></div><div class="alert" style="margin-top:12px">Вход только для пользователей, созданных в Supabase → Authentication → Users. Если с телефона кнопка не срабатывает, открой сайт в Safari/Chrome, не во встроенном браузере Telegram/WhatsApp.</div><button class="btn secondary" onclick="closeModal('loginModal')" style="margin-top:12px">Закрыть</button></div></div>
 
-<div class="modal" id="productModal"><div class="modalbox"><h2 id="productModalTitle">Товар</h2><input type="hidden" id="productId"><div class="formgrid"><div class="field"><label>Название</label><input class="input" id="pName"></div><div class="field"><label>Категория</label><input class="input" id="pCategory" placeholder="iPhone / AirPods / Mac"></div><div class="field"><label>Себестоимость</label><input class="input" id="pCost" type="number"></div><div class="field"><label>Плановая цена продажи</label><input class="input" id="pPlan" type="number"></div><div class="field"><label>Дата закупки</label><input class="input" id="pPurchaseDate" type="date"></div><div class="field"><label>Дата поступления</label><input class="input" id="pArrivalDate" type="date"></div><div class="field"><label>Поставщик / источник</label><input class="input" id="pSource"></div><div class="field"><label>Ответственный</label><input class="input" id="pOwner"></div><div class="field"><label>Комментарий</label><input class="input" id="pComment"></div></div><div class="row" style="margin-top:14px"><button class="btn green" id="saveProductBtn">Сохранить</button><button class="btn secondary" onclick="closeModal('productModal')">Закрыть</button></div></div></div>
+<div class="modal" id="productModal"><div class="modalbox"><h2 id="productModalTitle">Товар</h2><input type="hidden" id="productId"><div class="formgrid"><div class="field"><label>Название</label><input class="input" id="pName"></div><div class="field"><label>Категория</label><input class="input" id="pCategory" placeholder="iPhone / AirPods / Mac"></div><div class="field"><label>Себестоимость за 1 шт.</label><input class="input" id="pCost" type="number"></div><div class="field"><label>Плановая цена продажи за 1 шт.</label><input class="input" id="pPlan" type="number"></div><div class="field" id="pQuantityField"><label>Количество, шт.</label><input class="input" id="pQuantity" type="number" min="1" step="1" value="1"></div><div class="field"><label>Дата закупки</label><input class="input" id="pPurchaseDate" type="date"></div><div class="field"><label>Дата поступления</label><input class="input" id="pArrivalDate" type="date"></div><div class="field"><label>Поставщик / источник</label><input class="input" id="pSource"></div><div class="field"><label>Ответственный</label><input class="input" id="pOwner"></div><div class="field"><label>Комментарий</label><input class="input" id="pComment"></div></div><div class="row" style="margin-top:14px"><button class="btn green" id="saveProductBtn">Сохранить</button><button class="btn secondary" onclick="closeModal('productModal')">Закрыть</button></div></div></div>
 
 <div class="modal" id="saleModal"><div class="modalbox"><h2>Продажа товара</h2><input type="hidden" id="saleProductId"><div class="formgrid"><div class="field"><label>Цена продажи</label><input class="input" id="salePrice" type="number"></div><div class="field"><label>Дата продажи</label><input class="input" id="saleDate" type="date"></div><div class="field"><label>Кто продал</label><input class="input" id="soldBy"></div></div><div class="row" style="margin-top:14px"><button class="btn green" id="confirmSaleBtn">Провести продажу</button><button class="btn secondary" onclick="closeModal('saleModal')">Закрыть</button></div></div></div>
 
@@ -224,8 +245,6 @@ const DEFAULT_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
 let supabaseClient = null;
 let sessionUser = null;
 let state = {products:[], finance:[], logs:[]};
-let productsViewMode = localStorage.getItem('mactopus_products_view') || 'summary';
-let collapsedProductCategories = JSON.parse(localStorage.getItem('mactopus_collapsed_product_categories')||'{}');
 let chart = null;
 let realtimeChannel = null;
 let realtimeReloadTimer = null;
@@ -418,139 +437,22 @@ function renderDashboard(){
   const ctx=document.getElementById('financeChart'); if(chart) chart.destroy(); 
   chart=new Chart(ctx,{type:'line',data:{labels,datasets:[{label:'Cash',data,tension:.35}]},options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#98a2b3'},grid:{color:'#1f2937'}},y:{ticks:{color:'#98a2b3'},grid:{color:'#1f2937'}}}}});
 }
-function setProductsView(mode){
-  productsViewMode = mode || 'list';
-  localStorage.setItem('mactopus_products_view', productsViewMode);
+function quickFilter(status){
+  const select=document.getElementById('statusFilter');
+  if(select){ select.value=status; }
   renderProducts();
 }
-window.setProductsView = setProductsView;
-
-function toggleProductCategory(category){
-  collapsedProductCategories[category] = !collapsedProductCategories[category];
-  localStorage.setItem('mactopus_collapsed_product_categories', JSON.stringify(collapsedProductCategories));
-  renderProducts();
+function actionButtonsForProduct(p, st){
+  const id=p.id;
+  return `<div class="actionRow">
+    <button class="btn secondary" title="Редактировать" onclick="editProduct('${id}')">✏️</button>
+    ${st==='В пути'?`<button class="btn yellow" onclick="markArrived('${id}')">📥 Поступил</button>`:''}
+    ${st==='В продаже'?`<button class="btn yellow" onclick="openDelivery('${id}')">🚚 Отправить</button><button class="btn green" onclick="openSale('${id}')">💰 Продать</button>`:''}
+    ${st==='В доставке'?`<button class="btn green" onclick="paymentReceived('${id}')">💵 Оплата</button><button class="btn secondary" onclick="returnFromDelivery('${id}')">↩️ Возврат</button>`:''}
+    ${st!=='Архив' && st!=='Продан'?`<button class="btn danger" onclick="archiveProduct('${id}')">🗑 Архив</button>`:''}
+  </div>`;
 }
-window.toggleProductCategory = toggleProductCategory;
-
-function openProductUnits(name, category){
-  productsViewMode = 'list';
-  localStorage.setItem('mactopus_products_view', productsViewMode);
-  document.getElementById('search').value = name || '';
-  document.getElementById('statusFilter').value = 'all';
-  renderProducts();
-}
-window.openProductUnits = openProductUnits;
-
-function stockClass(n){
-  n = Number(n)||0;
-  if(n<=0) return 'stock-zero';
-  if(n<=2) return 'stock-low';
-  return 'stock-ok';
-}
-
-function getProductGroupKey(p){
-  const name = (p.name || 'Без названия').trim() || 'Без названия';
-  const category = (p.category || 'Без категории').trim() || 'Без категории';
-  return category + '||' + name;
-}
-
-function buildProductSummary(){
-  const groups = {};
-  (state.products||[]).forEach(p=>{
-    const st = productStatus(p);
-    if(st === 'Архив') return;
-    const category = (p.category || 'Без категории').trim() || 'Без категории';
-    const name = (p.name || 'Без названия').trim() || 'Без названия';
-    const key = category + '||' + name;
-    if(!groups[key]){
-      groups[key] = {
-        key, category, name,
-        stock:0, road:0, delivery:0, sold:0, total:0,
-        stockCost:0, roadCost:0, deliveryCost:0, expected:0, revenue:0, profit:0,
-        units:[]
-      };
-    }
-    const g = groups[key];
-    g.units.push(p);
-    g.total += 1;
-    if(st === 'В продаже'){ g.stock += 1; g.stockCost += Number(p.cost||0); }
-    if(st === 'В пути'){ g.road += 1; g.roadCost += Number(p.cost||0); }
-    if(st === 'В доставке'){ g.delivery += 1; g.deliveryCost += Number(p.cost||0); g.expected += expectedPayment(p); }
-    if(st === 'Продан'){ g.sold += 1; g.revenue += Number(p.actual_sale_price||0); g.profit += profit(p); }
-  });
-  return Object.values(groups);
-}
-
-function summaryMatchesFilter(g, f){
-  if(f === 'all') return true;
-  if(f === 'В пути') return g.road > 0;
-  if(f === 'В продаже') return g.stock > 0;
-  if(f === 'В доставке') return g.delivery > 0;
-  if(f === 'Продан') return g.sold > 0;
-  if(f === 'Архив') return false;
-  if(f === 'stuck') return g.units.some(p=>productStatus(p)==='В продаже' && daysBetween(p.arrival_date)>30);
-  if(f === 'lowmargin') return g.units.some(p=>productStatus(p)==='Продан' && margin(p)<.15);
-  if(f === 'onlystock') return g.stock > 0;
-  if(f === 'zerostock') return g.stock === 0;
-  return true;
-}
-
-function renderProductsSummary(){
-  const q=(document.getElementById('search').value||'').toLowerCase().trim();
-  const f=document.getElementById('statusFilter').value;
-  const groups = buildProductSummary().filter(g=>{
-    const text=(g.category+' '+g.name).toLowerCase();
-    if(q && !text.includes(q)) return false;
-    return summaryMatchesFilter(g,f);
-  }).sort((a,b)=>a.category.localeCompare(b.category,'ru') || a.name.localeCompare(b.name,'ru'));
-
-  const byCat = {};
-  groups.forEach(g=>{ (byCat[g.category] ||= []).push(g); });
-
-  const head = document.getElementById('productsHead');
-  head.innerHTML = `<tr><th>Категория / товар</th><th>Остаток</th><th>В пути</th><th>В доставке</th><th>Продано</th><th>Всего</th><th>Себестоимость остатка</th><th>Ожидаем оплату</th><th>Выручка</th><th>Прибыль</th><th>Действия</th></tr>`;
-  document.getElementById('productsSummaryHint').style.display='';
-  document.body.classList.add('products-summary-mode');
-  document.body.classList.remove('products-list-mode');
-
-  let total = {stock:0, road:0, delivery:0, sold:0, total:0, stockCost:0, expected:0, revenue:0, profit:0};
-  const rows = [];
-  Object.keys(byCat).sort((a,b)=>a.localeCompare(b,'ru')).forEach(cat=>{
-    const items = byCat[cat];
-    const c = items.reduce((s,g)=>({
-      stock:s.stock+g.stock, road:s.road+g.road, delivery:s.delivery+g.delivery, sold:s.sold+g.sold, total:s.total+g.total,
-      stockCost:s.stockCost+g.stockCost, expected:s.expected+g.expected, revenue:s.revenue+g.revenue, profit:s.profit+g.profit
-    }), {stock:0,road:0,delivery:0,sold:0,total:0,stockCost:0,expected:0,revenue:0,profit:0});
-    Object.keys(total).forEach(k=>total[k]+=c[k]);
-    const collapsed = !!collapsedProductCategories[cat];
-    rows.push(`<tr class="summary-category">
-      <td><div class="cat-title"><button class="btn secondary" style="padding:4px 8px" onclick="toggleProductCategory('${esc(cat)}')">${collapsed?'▶':'▼'}</button><span>${esc(cat)}</span><span class="cat-count">${items.length}</span></div></td>
-      <td class="${stockClass(c.stock)}">${c.stock}</td><td>${c.road}</td><td>${c.delivery}</td><td class="risk-green">${c.sold}</td><td>${c.total}</td><td>${fmtRub(c.stockCost)}</td><td>${fmtRub(c.expected)}</td><td>${fmtRub(c.revenue)}</td><td>${fmtRub(c.profit)}</td><td></td>
-    </tr>`);
-    if(!collapsed){
-      items.forEach(g=>{
-        rows.push(`<tr class="summary-item">
-          <td class="summary-name"><b>${esc(g.name)}</b><br><span class="hint">Единиц: ${g.total}${g.stock===0?' · нет остатка':''}</span></td>
-          <td class="${stockClass(g.stock)}">${g.stock}</td><td>${g.road}</td><td>${g.delivery}</td><td class="risk-green">${g.sold}</td><td>${g.total}</td><td>${fmtRub(g.stockCost)}</td><td>${fmtRub(g.expected)}</td><td>${fmtRub(g.revenue)}</td><td>${fmtRub(g.profit)}</td><td><button class="btn secondary" onclick="openProductUnits('${esc(g.name)}','${esc(g.category)}')">Единицы</button></td>
-        </tr>`);
-      });
-    }
-  });
-
-  rows.push(`<tr class="summary-total"><td>Итого</td><td class="${stockClass(total.stock)}">${total.stock}</td><td>${total.road}</td><td>${total.delivery}</td><td class="risk-green">${total.sold}</td><td>${total.total}</td><td>${fmtRub(total.stockCost)}</td><td>${fmtRub(total.expected)}</td><td>${fmtRub(total.revenue)}</td><td>${fmtRub(total.profit)}</td><td></td></tr>`);
-  document.getElementById('productsBody').innerHTML = rows.join('') || '<tr><td colspan="11">Нет товаров</td></tr>';
-}
-
 function renderProducts(){ 
-  const head = document.getElementById('productsHead');
-  if(productsViewMode === 'summary'){
-    renderProductsSummary();
-    return;
-  }
-  document.getElementById('productsSummaryHint').style.display='none';
-  document.body.classList.add('products-list-mode');
-  document.body.classList.remove('products-summary-mode');
-  head.innerHTML = `<tr><th>ID</th><th>Название</th><th>Статус</th><th>Закупка</th><th>Поступление</th><th>Себестоимость</th><th>Продажа</th><th>Прибыль</th><th>Маржа</th><th>Дни</th><th>Кто создал</th><th>Действия</th></tr>`;
   const q=document.getElementById('search').value.toLowerCase(); 
   const f=document.getElementById('statusFilter').value; 
   let arr=[...state.products]; 
@@ -560,29 +462,66 @@ function renderProducts(){
     if(q && !text.includes(q)) return false; 
     if(f==='all') return true; 
     if(f==='stuck') return st==='В продаже' && daysBetween(p.arrival_date)>30; 
-    if(f==='lowmargin') return st==='Продан' && margin(p)<.15;
-    if(f==='onlystock') return st==='В продаже';
-    if(f==='zerostock') return false;
+    if(f==='lowmargin') return st==='Продан' && margin(p)<.15; 
     return st===f;
   });
   document.getElementById('productsBody').innerHTML=arr.map(p=>{
     const st=productStatus(p); 
     const cls=st==='В пути'?'st-road':st==='В продаже'?'st-stock':st==='В доставке'?'st-delivery':st==='Продан'?'st-sold':'st-arch'; 
     const d=displayDays(p); const dcls=d==='—'?'':d>30?'risk-red':d>15?'risk-yellow':'risk-green'; 
-    const deliveryInfo=st==='В доставке' ? `<br><span class="hint">Ожидаем: ${fmtRub(expectedPayment(p))}${p.tracking_number?' · '+esc(p.tracking_number):''}</span>` : '';
-    return `<tr><td>${String(p.id).slice(0,8)}</td><td><b>${esc(p.name)}</b><br><span class="hint">${esc(p.category||'')}</span>${deliveryInfo}</td><td><span class="status ${cls}">${st}</span></td><td>${p.purchase_date||'—'}</td><td>${p.arrival_date||'—'}</td><td>${fmtRub(p.cost)}</td><td>${st==='Продан'?fmtRub(p.actual_sale_price):(st==='В доставке'?fmtRub(expectedPayment(p)):'—')}</td><td>${st==='Продан'?fmtRub(profit(p)):'—'}</td><td>${st==='Продан'?pct(margin(p)):'—'}</td><td class="${dcls}">${d}</td><td>${esc(p.created_by||p.owner||'—')}</td><td><div class="row"><button class="btn secondary" onclick="editProduct('${p.id}')">✏️</button>${st==='В пути'?`<button class="btn yellow" onclick="markArrived('${p.id}')">Поступил</button>`:''}${st==='В продаже'?`<button class="btn yellow" onclick="openDelivery('${p.id}')">Отправить</button>`:''}${st==='В продаже'?`<button class="btn green" onclick="openSale('${p.id}')">Продать сразу</button>`:''}${st==='В доставке'?`<button class="btn green" onclick="paymentReceived('${p.id}')">Оплата получена</button><button class="btn secondary" onclick="returnFromDelivery('${p.id}')">Возврат</button>`:''}${st!=='Архив' && st!=='Продан'?`<button class="btn danger" onclick="archiveProduct('${p.id}')">Архив</button>`:''}</div></td></tr>`
+    const deliveryInfo=st==='В доставке' ? `<br><span class="hint">Ожидаем: ${fmtRub(expectedPayment(p))}${p.tracking_number?' · '+esc(p.tracking_number):''}${p.buyer_contact?' · '+esc(p.buyer_contact):''}</span>` : '';
+    const saleValue=st==='Продан'?fmtRub(p.actual_sale_price):(st==='В доставке'?fmtRub(expectedPayment(p)):'—');
+    const responsible=esc(p.sold_by||p.owner||p.created_by||'—');
+    return `<tr><td>${String(p.id).slice(0,8)}</td><td><b>${esc(p.name)}</b><br><span class="hint">${esc(p.category||'')}</span>${deliveryInfo}</td><td><span class="status ${cls}">${st}</span></td><td>${p.purchase_date||'—'}</td><td>${p.arrival_date||'—'}</td><td>${fmtRub(p.cost)}</td><td>${saleValue}</td><td>${st==='Продан'?fmtRub(profit(p)):'—'}</td><td>${st==='Продан'?pct(margin(p)):'—'}</td><td class="${dcls}">${d}</td><td>${responsible}</td><td>${actionButtonsForProduct(p,st)}</td></tr>`
   }).join('') || '<tr><td colspan="12">Нет товаров</td></tr>'; 
 }
 
-let inventoryView='stock';
-function setInventoryView(v){ inventoryView=v; renderInventory(); }
-function inventoryItems(){
-  const q=(document.getElementById('inventorySearch')?.value||'').toLowerCase();
-  let arr=[...(state.products||[])].filter(p=>productStatus(p)!=='Архив');
-  arr=arr.filter(p=>{ const st=productStatus(p); if(inventoryView==='stock') return st==='В продаже'; if(inventoryView==='road') return st==='В пути'; if(inventoryView==='delivery') return st==='В доставке'; if(inventoryView==='sold') return st==='Продан'; if(inventoryView==='stuck') return st==='В продаже' && daysBetween(p.arrival_date)>30; return true; });
-  if(q) arr=arr.filter(p=>(p.name+' '+(p.category||'')+' '+(p.owner||'')+' '+(p.created_by||'')).toLowerCase().includes(q));
-  return arr;
+let inventoryView='all';
+let collapsedInventoryCategories = JSON.parse(localStorage.getItem('mactopus_collapsed_inventory_categories')||'{}');
+function setInventoryView(v){ inventoryView=v||'all'; renderInventory(); }
+window.setInventoryView=setInventoryView;
+function toggleInventoryCategory(category){ collapsedInventoryCategories[category]=!collapsedInventoryCategories[category]; localStorage.setItem('mactopus_collapsed_inventory_categories', JSON.stringify(collapsedInventoryCategories)); renderInventory(); }
+window.toggleInventoryCategory=toggleInventoryCategory;
+function stockClass(n){ n=Number(n)||0; if(n<=0) return 'stock-zero'; if(n<=2) return 'stock-low'; return 'stock-ok'; }
+function buildInventorySummary(){
+  const groups={};
+  (state.products||[]).forEach(p=>{
+    const st=productStatus(p);
+    if(st==='Архив') return;
+    const category=(p.category||'Без категории').trim()||'Без категории';
+    const name=(p.name||'Без названия').trim()||'Без названия';
+    const key=category+'||'+name;
+    if(!groups[key]) groups[key]={key,category,name,stock:0,road:0,delivery:0,sold:0,total:0,stockCost:0,roadCost:0,deliveryCost:0,expected:0,revenue:0,profit:0,stuck:0,units:[]};
+    const g=groups[key];
+    g.units.push(p); g.total++;
+    if(st==='В продаже'){ g.stock++; g.stockCost+=Number(p.cost||0); if(daysBetween(p.arrival_date)>30) g.stuck++; }
+    if(st==='В пути'){ g.road++; g.roadCost+=Number(p.cost||0); }
+    if(st==='В доставке'){ g.delivery++; g.deliveryCost+=Number(p.cost||0); g.expected+=expectedPayment(p); }
+    if(st==='Продан'){ g.sold++; g.revenue+=Number(p.actual_sale_price||0); g.profit+=profit(p); }
+  });
+  return Object.values(groups);
 }
+function inventorySummaryMatches(g){
+  if(inventoryView==='all') return true;
+  if(inventoryView==='stock') return g.stock>0;
+  if(inventoryView==='road') return g.road>0;
+  if(inventoryView==='delivery') return g.delivery>0;
+  if(inventoryView==='zerostock') return g.stock===0;
+  if(inventoryView==='stuck') return g.stuck>0;
+  return true;
+}
+function openInventoryUnits(name, category){
+  document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
+  const btn=[...document.querySelectorAll('.nav button')].find(b=>b.dataset.tab==='products'); if(btn) btn.classList.add('active');
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('products').classList.add('active');
+  document.getElementById('title').textContent='Товары';
+  document.getElementById('subtitle').textContent='Конкретные единицы выбранной складской позиции';
+  document.getElementById('search').value=name||'';
+  document.getElementById('statusFilter').value='all';
+  renderProducts();
+}
+window.openInventoryUnits=openInventoryUnits;
 function renderInventory(){
   if(!document.getElementById('inventoryBody')) return;
   const products=(state.products||[]).filter(p=>productStatus(p)!=='Архив');
@@ -592,57 +531,66 @@ function renderInventory(){
   const sold=products.filter(p=>productStatus(p)==='Продан');
   const stuck=stock.filter(p=>daysBetween(p.arrival_date)>30);
   const sum=(arr,fn)=>arr.reduce((s,p)=>s+Number(fn(p)||0),0);
-  const stockMoney=sum(stock,p=>p.cost), roadMoney=sum(road,p=>p.cost), stuckMoney=sum(stuck,p=>p.cost);
+  const stockMoney=sum(stock,p=>p.cost), roadMoney=sum(road,p=>p.cost), deliveryCost=sum(delivery,p=>p.cost), stuckMoney=sum(stuck,p=>p.cost);
   const deliveryMoney=sum(delivery,p=>expectedPayment(p));
-  const deliveryCost=sum(delivery,p=>p.cost);
   const potential=sum(stock,p=>p.planned_sale_price||p.actual_sale_price||0);
   document.getElementById('iStockCount').textContent=stock.length; document.getElementById('iStockMoney').textContent=fmtRub(stockMoney)+' себестоимость';
   document.getElementById('iRoadCount').textContent=road.length; document.getElementById('iRoadMoney').textContent=fmtRub(roadMoney)+' в закупке';
-  const idc=document.getElementById('iDeliveryCount'); if(idc) idc.textContent=delivery.length;
-  const idm=document.getElementById('iDeliveryMoney'); if(idm) idm.textContent=fmtRub(deliveryMoney)+' ожидаем';
+  document.getElementById('iDeliveryCount').textContent=delivery.length; document.getElementById('iDeliveryMoney').textContent=fmtRub(deliveryMoney)+' ожидаем';
   document.getElementById('iSoldCount').textContent=sold.length; document.getElementById('iSoldRevenue').textContent=fmtRub(sum(sold,p=>p.actual_sale_price))+' выручка';
   document.getElementById('iFrozenMoney').textContent=fmtRub(stockMoney+roadMoney+deliveryCost);
   document.getElementById('iStuckCount').textContent=stuck.length; document.getElementById('iStuckMoney').textContent=fmtRub(stuckMoney);
   document.getElementById('iPotential').textContent=fmtRub(potential+deliveryMoney);
-  const cats={};
-  [...stock,...road,...delivery].forEach(p=>{ const c=p.category||'Без категории'; cats[c] ||= {stock:0,road:0,delivery:0,cost:0,plan:0}; const st=productStatus(p); if(st==='В пути') cats[c].road++; else if(st==='В доставке') cats[c].delivery++; else cats[c].stock++; cats[c].cost+=Number(p.cost||0); cats[c].plan+=Number(st==='В доставке'?expectedPayment(p):(p.planned_sale_price||0)); });
-  document.getElementById('inventoryCategoryBody').innerHTML=Object.entries(cats).sort((a,b)=>b[1].cost-a[1].cost).map(([c,x])=>`<tr><td><b>${esc(c)}</b></td><td>${x.stock}</td><td>${x.road}${x.delivery?` / доставка ${x.delivery}`:''}</td><td>${fmtRub(x.cost)}</td><td>${fmtRub(x.plan)}</td></tr>`).join('') || '<tr><td colspan="5">Нет остатков</td></tr>';
-  const sig=[]; 
-  if(stock.length) sig.push(`📦 В наличии: ${stock.length} товар(ов), себестоимость ${fmtRub(stockMoney)}.`); 
-  if(road.length) sig.push(`🚚 В пути от поставщика: ${road.length} товар(ов), заморожено ${fmtRub(roadMoney)}.`); 
-  if(delivery.length) sig.push(`📮 В доставке покупателю: ${delivery.length} товар(ов), себестоимость ${fmtRub(deliveryCost)}, ожидаем оплату ${fmtRub(deliveryMoney)}.`); 
-  const overdueDelivery=delivery.filter(p=>deliveryDays(p)>7);
-  const criticalDelivery=delivery.filter(p=>deliveryDays(p)>10);
-  if(overdueDelivery.length) sig.push(`🟡 Доставка больше 7 дней: ${overdueDelivery.length} товар(ов), ожидаем ${fmtRub(overdueDelivery.reduce((s,p)=>s+expectedPayment(p),0))}.`);
-  if(criticalDelivery.length) sig.push(`🔴 Доставка больше 10 дней: ${criticalDelivery.length} товар(ов). Проверь треки и покупателя.`);
-  if(stuck.length) sig.push(`🔴 Зависшие остатки: ${stuck.length} товар(ов) на ${fmtRub(stuckMoney)}.`); 
-  const noPlan=stock.filter(p=>!Number(p.planned_sale_price||0)).length; if(noPlan) sig.push(`🟡 Без плановой цены продажи: ${noPlan} товар(ов).`); 
-  if(!sig.length) sig.push('🟢 Склад в норме.'); 
-  document.getElementById('inventorySignals').innerHTML=sig.map(x=>`<div class="alert">${x}</div>`).join('');
-  const titles={stock:'Товары в наличии',road:'Товары в пути от поставщика',delivery:'Товары в доставке покупателю',sold:'Проданные товары',stuck:'Зависшие остатки'};
-  document.getElementById('inventoryTableTitle').textContent=titles[inventoryView]||'Остатки';
-  const arr=inventoryItems();
-  document.getElementById('inventoryBody').innerHTML=arr.map(p=>{
-    const st=productStatus(p); const cls=st==='В пути'?'st-road':st==='В продаже'?'st-stock':st==='В доставке'?'st-delivery':st==='Продан'?'st-sold':'st-arch';
-    const d=displayDays(p); const dcls=d==='—'?'':d>30?'risk-red':d>15?'risk-yellow':'risk-green';
-    const deliveryText=st==='В доставке' ? `${p.delivery_date||'—'}<br><span class="hint">${esc(p.delivery_service||'')} ${esc(p.tracking_number||'')}</span>` : '—';
-    const actions=st==='В пути'?`<button class="btn yellow" onclick="markArrived('${p.id}')">Поступил</button>`:
-      st==='В продаже'?`<button class="btn yellow" onclick="openDelivery('${p.id}')">Отправить</button><button class="btn green" onclick="openSale('${p.id}')">Продать</button>`:
-      st==='В доставке'?`<button class="btn green" onclick="paymentReceived('${p.id}')">Оплата получена</button><button class="btn secondary" onclick="returnFromDelivery('${p.id}')">Возврат</button>`:
-      `<button class="btn secondary" onclick="editProduct('${p.id}')">Открыть</button>`;
-    return `<tr><td><b>${esc(p.name)}</b><br><span class="hint">${String(p.id).slice(0,8)}</span></td><td>${esc(p.category||'—')}</td><td><span class="status ${cls}">${st}</span></td><td>${p.purchase_date||'—'}</td><td>${p.arrival_date||'—'}</td><td>${fmtRub(p.cost)}</td><td>${fmtRub(st==='В доставке'?expectedPayment(p):(p.planned_sale_price||p.actual_sale_price||0))}</td><td class="${dcls}">${d}</td><td>${deliveryText}</td><td>${esc(p.owner||p.created_by||'—')}</td><td><div class="row">${actions}</div></td></tr>`;
-  }).join('') || '<tr><td colspan="11">Нет товаров</td></tr>';
+  const sig=[];
+  if(stock.length) sig.push('📦 В наличии: '+stock.length+' ед. на '+fmtRub(stockMoney)+'.');
+  if(road.length) sig.push('🚚 В пути от поставщика: '+road.length+' ед. на '+fmtRub(roadMoney)+'.');
+  if(delivery.length) sig.push('📮 В доставке: '+delivery.length+' ед., ожидаем '+fmtRub(deliveryMoney)+'.');
+  const summary=buildInventorySummary();
+  const lowStock=summary.filter(g=>g.stock>0 && g.stock<=2).length;
+  const zeroStock=summary.filter(g=>g.stock===0 && (g.sold>0 || g.road>0 || g.delivery>0)).length;
+  if(lowStock) sig.push('🟡 Низкий остаток по '+lowStock+' позициям.');
+  if(zeroStock) sig.push('🔴 Нулевой остаток по '+zeroStock+' позициям.');
+  if(stuck.length) sig.push('🔴 Зависло >30 дней: '+stuck.length+' ед. на '+fmtRub(stuckMoney)+'.');
+  if(!sig.length) sig.push('🟢 Склад в норме.');
+  document.getElementById('inventorySignals').innerHTML=sig.map(x=>'<div class="alert">'+x+'</div>').join('');
+  const titles={all:'Сводка по всем товарам',stock:'Позиции с остатком',road:'Позиции в пути',delivery:'Позиции в доставке',zerostock:'Позиции с нулевым остатком',stuck:'Зависшие позиции'};
+  document.getElementById('inventoryTableTitle').textContent=titles[inventoryView]||'Сводка по остаткам';
+  const q=(document.getElementById('inventorySearch')?.value||'').toLowerCase().trim();
+  const groups=summary.filter(g=>{
+    if(q && !(g.category+' '+g.name).toLowerCase().includes(q)) return false;
+    return inventorySummaryMatches(g);
+  }).sort((a,b)=>a.category.localeCompare(b.category,'ru')||a.name.localeCompare(b.name,'ru'));
+  const byCat={}; groups.forEach(g=>{(byCat[g.category] ||= []).push(g);});
+  let total={stock:0,road:0,delivery:0,sold:0,total:0,stockCost:0,expected:0,revenue:0,profit:0};
+  const rows=[];
+  Object.keys(byCat).sort((a,b)=>a.localeCompare(b,'ru')).forEach(cat=>{
+    const items=byCat[cat];
+    const c=items.reduce((s,g)=>({stock:s.stock+g.stock,road:s.road+g.road,delivery:s.delivery+g.delivery,sold:s.sold+g.sold,total:s.total+g.total,stockCost:s.stockCost+g.stockCost,expected:s.expected+g.expected,revenue:s.revenue+g.revenue,profit:s.profit+g.profit}),{stock:0,road:0,delivery:0,sold:0,total:0,stockCost:0,expected:0,revenue:0,profit:0});
+    Object.keys(total).forEach(k=>total[k]+=c[k]);
+    const collapsed=!!collapsedInventoryCategories[cat];
+    rows.push('<tr class="summary-category"><td><div class="cat-title"><button class="btn secondary" style="padding:4px 8px" onclick="toggleInventoryCategory(\''+esc(cat)+'\')">'+(collapsed?'▶':'▼')+'</button><span>'+esc(cat)+'</span><span class="cat-count">'+items.length+'</span></div></td><td class="'+stockClass(c.stock)+'">'+c.stock+'</td><td>'+c.road+'</td><td>'+c.delivery+'</td><td class="risk-green">'+c.sold+'</td><td>'+c.total+'</td><td>'+fmtRub(c.stockCost)+'</td><td>'+fmtRub(c.expected)+'</td><td>'+fmtRub(c.revenue)+'</td><td>'+fmtRub(c.profit)+'</td><td></td></tr>');
+    if(!collapsed){
+      items.forEach(g=>{
+        rows.push('<tr class="summary-item"><td class="summary-name"><b>'+esc(g.name)+'</b><br><span class="hint">Единиц: '+g.total+(g.stuck?' · зависло '+g.stuck:'')+(g.stock===0?' · нет остатка':'')+'</span></td><td class="'+stockClass(g.stock)+'">'+g.stock+'</td><td>'+g.road+'</td><td>'+g.delivery+'</td><td class="risk-green">'+g.sold+'</td><td>'+g.total+'</td><td>'+fmtRub(g.stockCost)+'</td><td>'+fmtRub(g.expected)+'</td><td>'+fmtRub(g.revenue)+'</td><td>'+fmtRub(g.profit)+'</td><td class="summary-actions"><button class="btn secondary" onclick="openInventoryUnits(\''+esc(g.name)+'\',\''+esc(g.category)+'\')">Единицы</button></td></tr>');
+      });
+    }
+  });
+  rows.push('<tr class="summary-total"><td>Итого</td><td class="'+stockClass(total.stock)+'">'+total.stock+'</td><td>'+total.road+'</td><td>'+total.delivery+'</td><td class="risk-green">'+total.sold+'</td><td>'+total.total+'</td><td>'+fmtRub(total.stockCost)+'</td><td>'+fmtRub(total.expected)+'</td><td>'+fmtRub(total.revenue)+'</td><td>'+fmtRub(total.profit)+'</td><td></td></tr>');
+  document.getElementById('inventoryBody').innerHTML=rows.join('') || '<tr><td colspan="11">Нет товаров</td></tr>';
 }
-function renderFinance(){const f=document.getElementById('financeFilter').value; let arr=state.finance.filter(x=>f==='all'||x.type===f); document.getElementById('financeBody').innerHTML=arr.map(x=>{const p=state.products.find(p=>p.id===x.product_id); return `<tr><td>${x.date||'—'}</td><td>${esc(x.type)}</td><td><b>${fmtRub(x.amount)}</b></td><td>${esc(p?.name||'—')}</td><td>${esc(x.user_name||'—')}</td><td>${esc(x.comment||'')}</td></tr>`}).join('')||'<tr><td colspan="6">Нет операций</td></tr>';}
+function renderFinance(){const f=document.getElementById('financeFilter').value; let arr=state.finance.filter(x=>f==='all'||x.type===f); document.getElementById('financeBody').innerHTML=arr.map(x=>{const p=state.products.find(p=>p.id===x.product_id); return `<tr><td>${x.date||'—'}</td><td>${esc(x.type)}</td><td><b>${fmtRub(x.amount)}</b></td><td>${esc(p?.name||'—')}</td><td>${esc(x.user_name||'—')}</td><td>${esc(x.comment||'')}</td><td><button class="btn danger" onclick="deleteFinance('${x.id}')">Удалить</button></td></tr>`}).join('')||'<tr><td colspan="7">Нет операций</td></tr>'; }
 function renderLog(){document.getElementById('logBody').innerHTML=(state.logs||[]).map(x=>{const p=state.products.find(p=>p.id===x.product_id); return `<tr><td>${new Date(x.created_at).toLocaleString('ru-RU')}</td><td>${esc(x.action)}</td><td>${esc(x.user_name||'—')}</td><td>${esc(p?.name||'—')}</td><td>${esc(x.details||'')}</td></tr>`}).join('')||'<tr><td colspan="5">Журнал пуст</td></tr>';}
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
 async function saveProduct(){
   const id=document.getElementById('productId').value;
   const existing = id ? state.products.find(p=>p.id===id) : null;
   const before = snapshotProduct(existing);
+  const quantityInput = document.getElementById('pQuantity');
+  const quantity = id ? 1 : Math.max(1, Math.floor(Number(quantityInput?.value || 1)));
   const row={name:pName.value.trim(),category:pCategory.value.trim(),cost:Number(pCost.value)||0,planned_sale_price:Number(pPlan.value)||0,purchase_date:pPurchaseDate.value||null,arrival_date:pArrivalDate.value||null,source:pSource.value.trim(),owner:pOwner.value.trim(),comment:pComment.value.trim()};
   if(!row.name) return alert('Укажи название');
-  if(row.cost<=0) return alert('Себестоимость должна быть больше 0');
+  if(row.cost<=0) return alert('Себестоимость за 1 шт. должна быть больше 0');
+  if(quantity > 100) return alert('Слишком большое количество для одной партии. Максимум 100 шт.');
   if(!id) row.status=row.arrival_date?'В продаже':'В пути';
   if(id){
     if(existing && productStatus(existing)==='Продан'){
@@ -659,10 +607,29 @@ async function saveProduct(){
       await addLog('Редактирование товара',id,diffText(before, snapshotProduct(state.products[i])) || row.name);
     }
   } else {
-    row.id=uid(); row.created_by=currentName(); row.created_at=new Date().toISOString();
-    if(supabaseClient&&sessionUser){const {data,error}=await supabaseClient.from('products').insert(row).select().single(); if(error) return alert(error.message); row.id=data.id;} else {state.products.unshift(row); saveLocal();}
-    await addFinance({type:'Закупка',amount:-Math.abs(row.cost),product_id:row.id,date:row.purchase_date||today(),comment:'Авто: закупка товара'});
-    await addLog('Создание товара',row.id,`Название: ${row.name}; себестоимость: ${fmtRub(row.cost)}; статус: ${row.status}`);
+    const baseComment = row.comment;
+    const rows = Array.from({length: quantity}, (_, idx)=>({
+      ...row,
+      id: uid(),
+      created_by: currentName(),
+      created_at: new Date().toISOString(),
+      comment: quantity>1 ? `${baseComment ? baseComment + ' · ' : ''}Партия: ${quantity} шт.; позиция ${idx+1}/${quantity}` : baseComment
+    }));
+
+    let createdRows = rows;
+    if(supabaseClient&&sessionUser){
+      const {data,error}=await supabaseClient.from('products').insert(rows).select();
+      if(error) return alert(error.message);
+      createdRows = data || [];
+    } else {
+      state.products.unshift(...rows); saveLocal();
+    }
+
+    for(const item of createdRows){
+      await addFinance({type:'Закупка',amount:-Math.abs(item.cost),product_id:item.id,date:item.purchase_date||today(),comment: quantity>1 ? `Авто: закупка партии ${quantity} шт. (${item.name})` : 'Авто: закупка товара'});
+    }
+    const totalCost = row.cost * quantity;
+    await addLog('Создание партии товара', createdRows[0]?.id || null, `Название: ${row.name}; количество: ${quantity} шт.; себестоимость за 1 шт.: ${fmtRub(row.cost)}; всего: ${fmtRub(totalCost)}; статус: ${row.status}`);
   }
   closeModal('productModal'); await loadData(); }
 async function markArrived(id){
@@ -687,7 +654,7 @@ async function archiveProduct(id){
   const patch={archived:true,status:'Архив',updated_at:new Date().toISOString()};
   if(supabaseClient&&sessionUser){const {data,error}=await supabaseClient.from('products').update(patch).eq('id',id).is('sale_date',null).select().single(); if(error) return alert('Не удалось архивировать. Возможно, товар уже продан или изменён: '+error.message); await addLog('Архивирование товара',id,diffText(before, snapshotProduct(data)) || p.name);} else {p.archived=true; p.status='Архив'; saveLocal(); await addLog('Архивирование товара',id,diffText(before, snapshotProduct(p)) || p.name);}
   await loadData(); }
-function editProduct(id){const p=state.products.find(x=>x.id===id); productModalTitle.textContent='Редактировать товар'; productId.value=p.id; pName.value=p.name||''; pCategory.value=p.category||''; pCost.value=p.cost||0; pPlan.value=p.planned_sale_price||0; pPurchaseDate.value=p.purchase_date||''; pArrivalDate.value=p.arrival_date||''; pSource.value=p.source||''; pOwner.value=p.owner||''; pComment.value=p.comment||''; openModal('productModal');}
+function editProduct(id){const p=state.products.find(x=>x.id===id); productModalTitle.textContent='Редактировать товар'; productId.value=p.id; pName.value=p.name||''; pCategory.value=p.category||''; pCost.value=p.cost||0; pPlan.value=p.planned_sale_price||0; if(document.getElementById('pQuantity')) pQuantity.value=1; if(document.getElementById('pQuantityField')) pQuantityField.style.display='none'; pPurchaseDate.value=p.purchase_date||''; pArrivalDate.value=p.arrival_date||''; pSource.value=p.source||''; pOwner.value=p.owner||''; pComment.value=p.comment||''; openModal('productModal');}
 function openSale(id){const p=state.products.find(x=>x.id===id); if(!p) return alert('Товар не найден'); const st=productStatus(p); if(st!=='В продаже' && st!=='В доставке') return alert('Продать можно только товар в продаже или в доставке'); if(p.sale_date||p.actual_sale_price) return alert('Этот товар уже отмечен как проданный'); saleProductId.value=id; salePrice.value=p.delivery_expected_price||p.planned_sale_price||''; saleDate.value=today(); soldBy.value=currentName(); openModal('saleModal');}
 function openDelivery(id){
   const p=state.products.find(x=>x.id===id); 
@@ -774,9 +741,39 @@ async function confirmSale(){
   await addFinance({type:'Продажа',amount:Math.abs(price),product_id:id,date:row.sale_date,comment:st==='В доставке'?'Авто: оплата после доставки':'Авто: прямая продажа товара'});
   await addLog(st==='В доставке'?'Оплата получена':'Продажа товара',id,diffText(before, snapshotProduct(p)) || fmtRub(price));
   closeModal('saleModal'); await loadData();}
+async function deleteFinance(id){
+  const item=(state.finance||[]).find(x=>x.id===id);
+  if(!item) return alert('Финансовая операция не найдена');
+  if(!confirm('Удалить финансовую операцию: '+item.type+' '+fmtRub(item.amount)+'? Это изменит Cash.')) return;
+  if(!confirm('Подтверди удаление ещё раз. Действие нельзя отменить.')) return;
+  if(supabaseClient&&sessionUser){
+    await addLog('Удаление финоперации', item.product_id || null, item.type+': '+fmtRub(item.amount)+'; '+(item.comment||''));
+    const {error}=await supabaseClient.from('finance').delete().eq('id',id);
+    if(error) return alert('Ошибка удаления: '+error.message);
+  } else { state.finance=state.finance.filter(x=>x.id!==id); await addLog('Удаление финоперации', item.product_id || null, item.type+': '+fmtRub(item.amount)); saveLocal(); }
+  await loadData();
+}
+async function deleteProduct(id){
+  const p=(state.products||[]).find(x=>x.id===id);
+  if(!p) return alert('Товар не найден');
+  if(!confirm('Удалить товар «'+p.name+'»? Будут удалены связанные финоперации и записи журнала.')) return;
+  if(!confirm('Подтверди удаление ещё раз. Действие нельзя отменить.')) return;
+  if(supabaseClient&&sessionUser){
+    await supabaseClient.from('finance').delete().eq('product_id',id);
+    await supabaseClient.from('activity_log').delete().eq('product_id',id);
+    const {error}=await supabaseClient.from('products').delete().eq('id',id);
+    if(error) return alert('Ошибка удаления товара: '+error.message);
+  } else {
+    state.products=state.products.filter(x=>x.id!==id);
+    state.finance=state.finance.filter(x=>x.product_id!==id);
+    state.logs=state.logs.filter(x=>x.product_id!==id);
+    saveLocal();
+  }
+  await loadData();
+}
 function normalizeFinanceAmount(type, value){ const raw = Number(value) || 0; const abs = Math.abs(raw); if(["Вывод","Закупка","Расход","Комиссия"].includes(type)) return -abs; if(["Инвестиция","Продажа"].includes(type)) return abs; return raw; }
 async function saveFinance(){ const rawAmount=Number(fAmount.value)||0; if(!rawAmount) return alert("Укажи сумму"); const type=fType.value; const amount=normalizeFinanceAmount(type, rawAmount); await addFinance({type,amount,date:fDate.value||today(),comment:fComment.value}); await addLog("Финансовая операция",null,`${type}: ${fmtRub(amount)}`); closeModal("financeModal"); await loadData(); }
-window.editProduct=editProduct; window.openSale=openSale; window.openDelivery=openDelivery; window.paymentReceived=paymentReceived; window.returnFromDelivery=returnFromDelivery; window.markArrived=markArrived; window.archiveProduct=archiveProduct;
+window.editProduct=editProduct; window.openSale=openSale; window.openDelivery=openDelivery; window.paymentReceived=paymentReceived; window.returnFromDelivery=returnFromDelivery; window.markArrived=markArrived; window.archiveProduct=archiveProduct; window.deleteProduct=deleteProduct; window.deleteFinance=deleteFinance;
 async function authCheck(){
   if(!supabaseClient) return;
   try{
@@ -834,7 +831,7 @@ loginBtn.addEventListener('click', handleLogin);
 loginPassword.addEventListener('keydown', e=>{ if(e.key==='Enter') handleLogin(); });
 loginEmail.addEventListener('keydown', e=>{ if(e.key==='Enter') loginPassword.focus(); });
 logoutBtn.onclick=async()=>{ stopRealtime(); if(supabaseClient) await supabaseClient.auth.signOut(); sessionUser=null; await loadData(); };
-loginOpenBtn.onclick=()=>openModal('loginModal'); syncBtn.onclick=loadData; addProductBtn.onclick=()=>{productModalTitle.textContent='Добавить товар'; ['productId','pName','pCategory','pCost','pPlan','pPurchaseDate','pArrivalDate','pSource','pOwner','pComment'].forEach(id=>document.getElementById(id).value=''); pPurchaseDate.value=today(); pOwner.value=currentName(); openModal('productModal');}; addFinanceBtn.onclick=()=>{fDate.value=today(); fAmount.value=''; fComment.value=''; openModal('financeModal');}; saveProductBtn.onclick=saveProduct; confirmSaleBtn.onclick=confirmSale; confirmDeliveryBtn.onclick=confirmDelivery; saveFinanceBtn.onclick=saveFinance; saveConfigBtn.onclick=()=>{localStorage.setItem('mactopus_supabase_config',JSON.stringify({url:supabaseUrl.value.trim(),key:supabaseKey.value.trim()})); alert('Настройки сохранены. Обнови страницу, после входа Realtime включится автоматически.');}; copySqlBtn.onclick=()=>navigator.clipboard.writeText(SQL).then(()=>alert('SQL скопирован')); search.oninput=renderProducts; statusFilter.onchange=renderProducts; financeFilter.onchange=renderFinance; if(document.getElementById('inventorySearch')) inventorySearch.oninput=renderInventory;
+loginOpenBtn.onclick=()=>openModal('loginModal'); syncBtn.onclick=loadData; addProductBtn.onclick=()=>{productModalTitle.textContent='Добавить товар'; ['productId','pName','pCategory','pCost','pPlan','pPurchaseDate','pArrivalDate','pSource','pOwner','pComment'].forEach(id=>document.getElementById(id).value=''); if(document.getElementById('pQuantity')) pQuantity.value=1; if(document.getElementById('pQuantityField')) pQuantityField.style.display='block'; pPurchaseDate.value=today(); pOwner.value=currentName(); openModal('productModal');}; addFinanceBtn.onclick=()=>{fDate.value=today(); fAmount.value=''; fComment.value=''; openModal('financeModal');}; saveProductBtn.onclick=saveProduct; confirmSaleBtn.onclick=confirmSale; confirmDeliveryBtn.onclick=confirmDelivery; saveFinanceBtn.onclick=saveFinance; saveConfigBtn.onclick=()=>{localStorage.setItem('mactopus_supabase_config',JSON.stringify({url:supabaseUrl.value.trim(),key:supabaseKey.value.trim()})); alert('Настройки сохранены. Обнови страницу, после входа Realtime включится автоматически.');}; copySqlBtn.onclick=()=>navigator.clipboard.writeText(SQL).then(()=>alert('SQL скопирован')); search.oninput=renderProducts; statusFilter.onchange=renderProducts; financeFilter.onchange=renderFinance; if(document.getElementById('inventorySearch')) inventorySearch.oninput=renderInventory;
 demoSeedBtn.onclick=()=>{state={products:[{id:uid(),name:'iPhone 15 Pro 256',category:'iPhone',cost:76000,planned_sale_price:89000,purchase_date:today(),arrival_date:today(),status:'В продаже',created_by:'demo'},{id:uid(),name:'AirPods Pro 2',category:'AirPods',cost:14500,planned_sale_price:18500,purchase_date:today(),arrival_date:null,status:'В пути',created_by:'demo'}],finance:[],logs:[]}; state.finance=[{id:uid(),type:'Закупка',amount:-76000,date:today(),product_id:state.products[0].id,user_name:'demo',comment:'Демо закупка',created_at:new Date().toISOString()},{id:uid(),type:'Закупка',amount:-14500,date:today(),product_id:state.products[1].id,user_name:'demo',comment:'Демо закупка',created_at:new Date().toISOString()},{id:uid(),type:'Инвестиция',amount:150000,date:today(),user_name:'demo',comment:'Старт',created_at:new Date().toISOString()}]; state.logs=[{id:uid(),action:'Загрузка демо',user_name:'demo',details:'Стартовые данные',created_at:new Date().toISOString()}]; saveLocal(); renderAll();};
 exportJsonBtn.onclick=()=>{const backup={exported_at:new Date().toISOString(),exported_by:currentName(),version:'3.6.3',...state}; const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='mactopus_backup_'+new Date().toISOString().slice(0,10)+'.json'; a.click();};
 importJson.onchange=async(e)=>{const file=e.target.files[0]; if(!file) return; state=JSON.parse(await file.text()); saveLocal(); renderAll();};
