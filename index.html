@@ -120,7 +120,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
   </main>
 </div>
 
-<div class="modal" id="loginModal"><div class="modalbox"><h2>Вход в Mactopus ERP</h2><div class="formgrid"><div class="field"><label>Email</label><input class="input" id="loginEmail" type="email"></div><div class="field"><label>Пароль</label><input class="input" id="loginPassword" type="password"></div><div class="field"><label>&nbsp;</label><button class="btn" id="loginBtn" style="width:100%">Войти / Зарегистрироваться</button></div></div><div class="alert" style="margin-top:12px">Если пользователь уже создан — войдёт. Если нет — будет попытка регистрации. В Supabase должен быть включён Email Auth.</div><button class="btn secondary" onclick="closeModal('loginModal')" style="margin-top:12px">Закрыть</button></div></div>
+<div class="modal" id="loginModal"><div class="modalbox"><h2>Вход в Mactopus ERP</h2><div class="formgrid"><div class="field"><label>Email</label><input class="input" id="loginEmail" type="email" autocomplete="email" inputmode="email"></div><div class="field"><label>Пароль</label><input class="input" id="loginPassword" type="password" autocomplete="current-password"></div><div class="field"><label>&nbsp;</label><button class="btn" id="loginBtn" type="button" style="width:100%">Войти</button></div></div><div id="loginMessage" class="alert" style="display:none;margin-top:12px"></div><div class="alert" style="margin-top:12px">Вход только для пользователей, созданных в Supabase → Authentication → Users. Если с телефона кнопка не срабатывает, открой сайт в Safari/Chrome, не во встроенном браузере Telegram/WhatsApp.</div><button class="btn secondary" onclick="closeModal('loginModal')" style="margin-top:12px">Закрыть</button></div></div>
 
 <div class="modal" id="productModal"><div class="modalbox"><h2 id="productModalTitle">Товар</h2><input type="hidden" id="productId"><div class="formgrid"><div class="field"><label>Название</label><input class="input" id="pName"></div><div class="field"><label>Категория</label><input class="input" id="pCategory" placeholder="iPhone / AirPods / Mac"></div><div class="field"><label>Себестоимость</label><input class="input" id="pCost" type="number"></div><div class="field"><label>Плановая цена продажи</label><input class="input" id="pPlan" type="number"></div><div class="field"><label>Дата закупки</label><input class="input" id="pPurchaseDate" type="date"></div><div class="field"><label>Дата поступления</label><input class="input" id="pArrivalDate" type="date"></div><div class="field"><label>Поставщик / источник</label><input class="input" id="pSource"></div><div class="field"><label>Ответственный</label><input class="input" id="pOwner"></div><div class="field"><label>Комментарий</label><input class="input" id="pComment"></div></div><div class="row" style="margin-top:14px"><button class="btn green" id="saveProductBtn">Сохранить</button><button class="btn secondary" onclick="closeModal('productModal')">Закрыть</button></div></div></div>
 
@@ -618,12 +618,66 @@ async function confirmSale(){
 function normalizeFinanceAmount(type, value){ const raw = Number(value) || 0; const abs = Math.abs(raw); if(["Вывод","Закупка","Расход","Комиссия"].includes(type)) return -abs; if(["Инвестиция","Продажа"].includes(type)) return abs; return raw; }
 async function saveFinance(){ const rawAmount=Number(fAmount.value)||0; if(!rawAmount) return alert("Укажи сумму"); const type=fType.value; const amount=normalizeFinanceAmount(type, rawAmount); await addFinance({type,amount,date:fDate.value||today(),comment:fComment.value}); await addLog("Финансовая операция",null,`${type}: ${fmtRub(amount)}`); closeModal("financeModal"); await loadData(); }
 window.editProduct=editProduct; window.openSale=openSale; window.openDelivery=openDelivery; window.paymentReceived=paymentReceived; window.returnFromDelivery=returnFromDelivery; window.markArrived=markArrived; window.archiveProduct=archiveProduct;
-async function authCheck(){ if(!supabaseClient) return; const {data}=await supabaseClient.auth.getSession(); sessionUser=data.session?.user||null; if(sessionUser){ await loadData(); startRealtime(); } else { stopRealtime(); renderAll(); } }
-loginBtn.onclick=async()=>{ if(!supabaseClient) return alert('Сначала вставь SUPABASE_URL и ANON_KEY в настройках'); const email=loginEmail.value.trim(), password=loginPassword.value; if(!email||!password) return alert('Укажи email и пароль'); let {data,error}=await supabaseClient.auth.signInWithPassword({email,password}); if(error){ const r=await supabaseClient.auth.signUp({email,password}); if(r.error) return alert(r.error.message); alert('Регистрация создана. Если включено подтверждение email — подтверди почту.'); } closeModal('loginModal'); await authCheck(); };
+async function authCheck(){
+  if(!supabaseClient) return;
+  try{
+    const {data,error}=await supabaseClient.auth.getSession();
+    if(error) throw error;
+    sessionUser=data.session?.user||null;
+    if(sessionUser){ await loadData(); startRealtime(); }
+    else { stopRealtime(); renderAll(); }
+  }catch(err){
+    console.error('authCheck error', err);
+    stopRealtime();
+    sessionUser=null;
+    renderAll();
+  }
+}
+function showLoginMessage(text, kind='info'){
+  const box=document.getElementById('loginMessage');
+  if(!box) return alert(text);
+  box.style.display='block';
+  box.textContent=text;
+  box.style.borderColor = kind==='error' ? 'rgba(255,90,90,.45)' : 'rgba(91,140,255,.35)';
+  box.style.background = kind==='error' ? 'rgba(255,90,90,.10)' : 'rgba(91,140,255,.10)';
+}
+async function handleLogin(){
+  if(!supabaseClient){ showLoginMessage('Не подключён Supabase. Проверь настройки SUPABASE_URL и ANON_KEY.', 'error'); return; }
+  const email=(loginEmail.value||'').trim();
+  const password=loginPassword.value||'';
+  if(!email||!password){ showLoginMessage('Укажи email и пароль.', 'error'); return; }
+  const btn=document.getElementById('loginBtn');
+  const oldText=btn.textContent;
+  btn.disabled=true;
+  btn.textContent='Входим...';
+  showLoginMessage('Проверяю данные входа...');
+  try{
+    const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
+    if(error) throw error;
+    sessionUser=data.user||data.session?.user||null;
+    showLoginMessage('Вход выполнен. Загружаю данные...');
+    closeModal('loginModal');
+    await authCheck();
+  }catch(err){
+    console.error('login error', err);
+    let msg = err?.message || String(err);
+    const lower=msg.toLowerCase();
+    if(lower.includes('invalid login credentials')) msg='Неверный email или пароль. Проверь данные пользователя в Supabase → Authentication → Users.';
+    if(lower.includes('email not confirmed')) msg='Email не подтверждён. Либо подтверди почту, либо отключи Confirm email в Supabase → Authentication → Settings.';
+    if(lower.includes('failed to fetch') || lower.includes('network')) msg='Телефон не может подключиться к Supabase. Проверь интернет/VPN и открой сайт в Safari/Chrome.';
+    showLoginMessage(msg, 'error');
+  }finally{
+    btn.disabled=false;
+    btn.textContent=oldText;
+  }
+}
+loginBtn.addEventListener('click', handleLogin);
+loginPassword.addEventListener('keydown', e=>{ if(e.key==='Enter') handleLogin(); });
+loginEmail.addEventListener('keydown', e=>{ if(e.key==='Enter') loginPassword.focus(); });
 logoutBtn.onclick=async()=>{ stopRealtime(); if(supabaseClient) await supabaseClient.auth.signOut(); sessionUser=null; await loadData(); };
 loginOpenBtn.onclick=()=>openModal('loginModal'); syncBtn.onclick=loadData; addProductBtn.onclick=()=>{productModalTitle.textContent='Добавить товар'; ['productId','pName','pCategory','pCost','pPlan','pPurchaseDate','pArrivalDate','pSource','pOwner','pComment'].forEach(id=>document.getElementById(id).value=''); pPurchaseDate.value=today(); pOwner.value=currentName(); openModal('productModal');}; addFinanceBtn.onclick=()=>{fDate.value=today(); fAmount.value=''; fComment.value=''; openModal('financeModal');}; saveProductBtn.onclick=saveProduct; confirmSaleBtn.onclick=confirmSale; confirmDeliveryBtn.onclick=confirmDelivery; saveFinanceBtn.onclick=saveFinance; saveConfigBtn.onclick=()=>{localStorage.setItem('mactopus_supabase_config',JSON.stringify({url:supabaseUrl.value.trim(),key:supabaseKey.value.trim()})); alert('Настройки сохранены. Обнови страницу, после входа Realtime включится автоматически.');}; copySqlBtn.onclick=()=>navigator.clipboard.writeText(SQL).then(()=>alert('SQL скопирован')); search.oninput=renderProducts; statusFilter.onchange=renderProducts; financeFilter.onchange=renderFinance; if(document.getElementById('inventorySearch')) inventorySearch.oninput=renderInventory;
 demoSeedBtn.onclick=()=>{state={products:[{id:uid(),name:'iPhone 15 Pro 256',category:'iPhone',cost:76000,planned_sale_price:89000,purchase_date:today(),arrival_date:today(),status:'В продаже',created_by:'demo'},{id:uid(),name:'AirPods Pro 2',category:'AirPods',cost:14500,planned_sale_price:18500,purchase_date:today(),arrival_date:null,status:'В пути',created_by:'demo'}],finance:[],logs:[]}; state.finance=[{id:uid(),type:'Закупка',amount:-76000,date:today(),product_id:state.products[0].id,user_name:'demo',comment:'Демо закупка',created_at:new Date().toISOString()},{id:uid(),type:'Закупка',amount:-14500,date:today(),product_id:state.products[1].id,user_name:'demo',comment:'Демо закупка',created_at:new Date().toISOString()},{id:uid(),type:'Инвестиция',amount:150000,date:today(),user_name:'demo',comment:'Старт',created_at:new Date().toISOString()}]; state.logs=[{id:uid(),action:'Загрузка демо',user_name:'demo',details:'Стартовые данные',created_at:new Date().toISOString()}]; saveLocal(); renderAll();};
-exportJsonBtn.onclick=()=>{const backup={exported_at:new Date().toISOString(),exported_by:currentName(),version:'3.4',...state}; const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='mactopus_backup_'+new Date().toISOString().slice(0,10)+'.json'; a.click();};
+exportJsonBtn.onclick=()=>{const backup={exported_at:new Date().toISOString(),exported_by:currentName(),version:'3.6.3',...state}; const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='mactopus_backup_'+new Date().toISOString().slice(0,10)+'.json'; a.click();};
 importJson.onchange=async(e)=>{const file=e.target.files[0]; if(!file) return; state=JSON.parse(await file.text()); saveLocal(); renderAll();};
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active')); b.classList.add('active'); document.querySelectorAll('.section').forEach(s=>s.classList.remove('active')); document.getElementById(b.dataset.tab).classList.add('active'); title.textContent=b.textContent.replace(/[📊📦💰🧾⚙️]/g,'').trim();});
 initClient(); authCheck();
