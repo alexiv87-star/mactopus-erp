@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Mactopus ERP 3.3 — Доставка/Supabase</title>
+<title>Mactopus ERP 3.5 — Прибыль по моделям/Supabase</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
@@ -15,7 +15,7 @@
 <div class="app">
   <aside class="side">
     <div class="brand">Mactopus ERP</div>
-    <div class="sub">Версия 3.2 Остатки/Supabase<br>3 пользователя, все с админским доступом. Контроль доставок и ожидаемых оплат. Добавлена логика доставки: в доставке, ожидаемая оплата, возврат, оплата получена.</div>
+    <div class="sub">Версия 3.5 Аналитика/Supabase<br>3 пользователя, все с админским доступом. Добавлена прибыль по моделям: сумма прибыли, продажи, выручка и средняя маржа.</div>
     <div class="nav">
       <button class="active" data-tab="dashboard">📊 Дашборд</button>
       <button data-tab="products">📦 Товары</button>
@@ -51,6 +51,10 @@
         <div class="card"><h3>Товары в доставке</h3><div class="tablewrap"><table><thead><tr><th>Товар</th><th>Ожидаем</th><th>Дней</th><th>Трек</th><th>Покупатель</th></tr></thead><tbody id="deliveryWatchBody"></tbody></table></div></div>
       </div>
       <div class="card" style="margin-top:16px"><h3>Топ прибыльных товаров</h3><div class="tablewrap"><table><thead><tr><th>Товар</th><th>Прибыль</th><th>Маржа</th><th>Дней на витрине</th><th>Кто продал</th></tr></thead><tbody id="topProfitBody"></tbody></table></div></div>
+      <div class="grid split" style="margin-top:16px">
+        <div class="card"><h3>Прибыль по моделям</h3><div class="hint" style="margin-bottom:12px">Группировка по названию товара (name). Для точной аналитики называй одинаковые модели одинаково: например, «iPhone 13».</div><div class="tablewrap"><table><thead><tr><th>Модель</th><th>Прибыль</th><th>Продано</th><th>Выручка</th><th>Средняя маржа</th></tr></thead><tbody id="modelProfitBody"></tbody></table></div></div>
+        <div class="card"><h3>Инсайты по моделям</h3><div id="modelProfitInsights" class="grid"></div></div>
+      </div>
     </section>
 
     <section id="products" class="section">
@@ -338,6 +342,33 @@ function renderDashboard(){
   document.getElementById('deliveryWatchBody').innerHTML=deliveryWatch.map(p=>{const d=deliveryDays(p); return `<tr><td><b>${esc(p.name)}</b><br><span class="hint">${esc(p.delivery_service||'')}</span></td><td>${fmtRub(expectedPayment(p))}</td><td class="${deliveryRiskClass(d)}">${d}</td><td>${esc(p.tracking_number||'—')}</td><td>${esc(p.buyer_contact||'—')}</td></tr>`}).join('') || '<tr><td colspan="5">Нет товаров в доставке</td></tr>';
   const top=sold.sort((a,b)=>profit(b)-profit(a)).slice(0,8); 
   document.getElementById('topProfitBody').innerHTML=top.map(p=>`<tr><td>${esc(p.name)}</td><td>${fmtRub(profit(p))}</td><td>${pct(margin(p))}</td><td>${displayDays(p)}</td><td>${esc(p.sold_by||'—')}</td></tr>`).join('') || '<tr><td colspan="5">Пока нет продаж</td></tr>';
+  const modelMap={};
+  sold.forEach(p=>{
+    const key=(p.name||'Без названия').trim()||'Без названия';
+    if(!modelMap[key]) modelMap[key]={name:key, count:0, profit:0, revenue:0, cost:0, marginSum:0};
+    modelMap[key].count += 1;
+    modelMap[key].profit += profit(p);
+    modelMap[key].revenue += Number(p.actual_sale_price||0);
+    modelMap[key].cost += Number(p.cost||0);
+    modelMap[key].marginSum += margin(p);
+  });
+  const models=Object.values(modelMap).sort((a,b)=>b.profit-a.profit);
+  const modelBody=document.getElementById('modelProfitBody');
+  if(modelBody){
+    modelBody.innerHTML=models.map(m=>`<tr><td><b>${esc(m.name)}</b></td><td><b>${fmtRub(m.profit)}</b></td><td>${m.count}</td><td>${fmtRub(m.revenue)}</td><td>${pct(m.marginSum/m.count)}</td></tr>`).join('') || '<tr><td colspan="5">Пока нет проданных товаров</td></tr>';
+  }
+  const insights=document.getElementById('modelProfitInsights');
+  if(insights){
+    const best=models[0];
+    const worst=models.length ? models[models.length-1] : null;
+    const lowMargin=models.filter(m=>(m.marginSum/m.count)<0.15);
+    const insightRows=[];
+    if(best) insightRows.push(`🔥 Лучшая модель по прибыли: <b>${esc(best.name)}</b> — ${fmtRub(best.profit)} / ${best.count} продаж.`);
+    if(worst && models.length>1) insightRows.push(`⚠️ Самая слабая модель по прибыли: <b>${esc(worst.name)}</b> — ${fmtRub(worst.profit)}.`);
+    if(lowMargin.length) insightRows.push(`🟡 Моделей со средней маржой ниже 15%: <b>${lowMargin.length}</b>. Проверь закупочную цену или цену продажи.`);
+    if(!insightRows.length) insightRows.push('Пока недостаточно продаж для аналитики по моделям.');
+    insights.innerHTML=insightRows.map(x=>`<div class="alert">${x}</div>`).join('');
+  }
   const byDate={}; finance.slice().reverse().forEach(f=>{byDate[f.date]=(byDate[f.date]||0)+Number(f.amount||0)}); 
   const labels=Object.keys(byDate).sort(); let acc=0; const data=labels.map(d=>acc+=byDate[d]); 
   const ctx=document.getElementById('financeChart'); if(chart) chart.destroy(); 
