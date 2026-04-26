@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Mactopus ERP 2.1 — Realtime/Supabase</title>
+<title>Mactopus ERP 3.1 — Stability/Supabase</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
@@ -15,7 +15,7 @@
 <div class="app">
   <aside class="side">
     <div class="brand">Mactopus ERP</div>
-    <div class="sub">Версия 2.1 Realtime/Supabase<br>3 пользователя, все с админским доступом.</div>
+    <div class="sub">Версия 3.1 Stability/Supabase<br>3 пользователя, все с админским доступом. Защита от двойной продажи, расширенный журнал и backup.</div>
     <div class="nav">
       <button class="active" data-tab="dashboard">📊 Дашборд</button>
       <button data-tab="products">📦 Товары</button>
@@ -162,6 +162,11 @@ function currentName(){ return sessionUser?.email || localStorage.getItem('macto
 function productStatus(p){ if(p.archived || p.status==='Архив') return 'Архив'; if(p.sale_date) return 'Продан'; if(!p.arrival_date) return 'В пути'; return 'В продаже'; }
 function profit(p){ return p.sale_date ? (Number(p.actual_sale_price||0)-Number(p.cost||0)) : 0; }
 function margin(p){ return p.sale_date && Number(p.cost)>0 ? profit(p)/Number(p.cost) : 0; }
+function snapshotProduct(p){ if(!p) return {}; return {name:p.name||'', category:p.category||'', cost:Number(p.cost||0), planned_sale_price:Number(p.planned_sale_price||0), actual_sale_price:Number(p.actual_sale_price||0), purchase_date:p.purchase_date||null, arrival_date:p.arrival_date||null, sale_date:p.sale_date||null, status:productStatus(p), archived:!!p.archived}; }
+function diffText(before={}, after={}){
+  const labels={name:'Название',category:'Категория',cost:'Себестоимость',planned_sale_price:'План продажи',actual_sale_price:'Цена продажи',purchase_date:'Дата закупки',arrival_date:'Дата поступления',sale_date:'Дата продажи',status:'Статус',archived:'Архив'};
+  return Object.keys(labels).filter(k=>String(before[k] ?? '')!==String(after[k] ?? '')).map(k=>`${labels[k]}: ${before[k] ?? '—'} → ${after[k] ?? '—'}`).join('; ');
+}
 function displayDays(p){ if(!p.arrival_date) return '—'; return daysBetween(p.arrival_date, p.sale_date || today()); }
 function openModal(id){ document.getElementById(id).classList.add('show'); }
 function closeModal(id){ document.getElementById(id).classList.remove('show'); }
@@ -260,15 +265,75 @@ function renderProducts(){ const q=document.getElementById('search').value.toLow
 function renderFinance(){const f=document.getElementById('financeFilter').value; let arr=state.finance.filter(x=>f==='all'||x.type===f); document.getElementById('financeBody').innerHTML=arr.map(x=>{const p=state.products.find(p=>p.id===x.product_id); return `<tr><td>${x.date||'—'}</td><td>${esc(x.type)}</td><td><b>${fmtRub(x.amount)}</b></td><td>${esc(p?.name||'—')}</td><td>${esc(x.user_name||'—')}</td><td>${esc(x.comment||'')}</td></tr>`}).join('')||'<tr><td colspan="6">Нет операций</td></tr>';}
 function renderLog(){document.getElementById('logBody').innerHTML=(state.logs||[]).map(x=>{const p=state.products.find(p=>p.id===x.product_id); return `<tr><td>${new Date(x.created_at).toLocaleString('ru-RU')}</td><td>${esc(x.action)}</td><td>${esc(x.user_name||'—')}</td><td>${esc(p?.name||'—')}</td><td>${esc(x.details||'')}</td></tr>`}).join('')||'<tr><td colspan="5">Журнал пуст</td></tr>';}
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
-async function saveProduct(){ const id=document.getElementById('productId').value; const row={name:pName.value.trim(),category:pCategory.value.trim(),cost:Number(pCost.value)||0,planned_sale_price:Number(pPlan.value)||0,purchase_date:pPurchaseDate.value||null,arrival_date:pArrivalDate.value||null,source:pSource.value.trim(),owner:pOwner.value.trim(),comment:pComment.value.trim()}; if(!row.name) return alert('Укажи название'); if(row.cost<=0) return alert('Себестоимость должна быть больше 0'); row.status=row.arrival_date?'В продаже':'В пути';
-  if(id){ row.updated_at=new Date().toISOString(); if(supabaseClient&&sessionUser){const {error}=await supabaseClient.from('products').update(row).eq('id',id); if(error) return alert(error.message);} else {const i=state.products.findIndex(p=>p.id===id); state.products[i]={...state.products[i],...row}; saveLocal();} await addLog('Редактирование товара',id,row.name);
-  } else { row.id=uid(); row.created_by=currentName(); row.created_at=new Date().toISOString(); if(supabaseClient&&sessionUser){const {data,error}=await supabaseClient.from('products').insert(row).select().single(); if(error) return alert(error.message); row.id=data.id;} else {state.products.unshift(row); saveLocal();} await addFinance({type:'Закупка',amount:-Math.abs(row.cost),product_id:row.id,date:row.purchase_date||today(),comment:'Авто: закупка товара'}); await addLog('Создание товара',row.id,row.name); }
+async function saveProduct(){
+  const id=document.getElementById('productId').value;
+  const existing = id ? state.products.find(p=>p.id===id) : null;
+  const before = snapshotProduct(existing);
+  const row={name:pName.value.trim(),category:pCategory.value.trim(),cost:Number(pCost.value)||0,planned_sale_price:Number(pPlan.value)||0,purchase_date:pPurchaseDate.value||null,arrival_date:pArrivalDate.value||null,source:pSource.value.trim(),owner:pOwner.value.trim(),comment:pComment.value.trim()};
+  if(!row.name) return alert('Укажи название');
+  if(row.cost<=0) return alert('Себестоимость должна быть больше 0');
+  row.status=row.arrival_date?'В продаже':'В пути';
+  if(id){
+    if(existing && productStatus(existing)==='Продан'){
+      const ok = confirm('Товар уже продан. Изменять проданный товар можно только осознанно. Продолжить?');
+      if(!ok) return;
+    }
+    row.updated_at=new Date().toISOString();
+    if(supabaseClient&&sessionUser){
+      const {data,error}=await supabaseClient.from('products').update(row).eq('id',id).select().single();
+      if(error) return alert(error.message);
+      await addLog('Редактирование товара',id,diffText(before, snapshotProduct(data)) || row.name);
+    } else {
+      const i=state.products.findIndex(p=>p.id===id); state.products[i]={...state.products[i],...row}; saveLocal();
+      await addLog('Редактирование товара',id,diffText(before, snapshotProduct(state.products[i])) || row.name);
+    }
+  } else {
+    row.id=uid(); row.created_by=currentName(); row.created_at=new Date().toISOString();
+    if(supabaseClient&&sessionUser){const {data,error}=await supabaseClient.from('products').insert(row).select().single(); if(error) return alert(error.message); row.id=data.id;} else {state.products.unshift(row); saveLocal();}
+    await addFinance({type:'Закупка',amount:-Math.abs(row.cost),product_id:row.id,date:row.purchase_date||today(),comment:'Авто: закупка товара'});
+    await addLog('Создание товара',row.id,`Название: ${row.name}; себестоимость: ${fmtRub(row.cost)}; статус: ${row.status}`);
+  }
   closeModal('productModal'); await loadData(); }
-async function markArrived(id){ const date=prompt('Дата поступления',today()); if(!date) return; if(supabaseClient&&sessionUser){const {error}=await supabaseClient.from('products').update({arrival_date:date,status:'В продаже',updated_at:new Date().toISOString()}).eq('id',id); if(error) return alert(error.message);} else {const p=state.products.find(p=>p.id===id); p.arrival_date=date; p.status='В продаже'; saveLocal();} await addLog('Поступление товара',id,date); await loadData(); }
-async function archiveProduct(id){ if(!confirm('Перенести товар в архив?')) return; if(supabaseClient&&sessionUser){const {error}=await supabaseClient.from('products').update({archived:true,status:'Архив'}).eq('id',id); if(error) return alert(error.message);} else {const p=state.products.find(p=>p.id===id); p.archived=true; p.status='Архив'; saveLocal();} await addLog('Архивирование товара',id); await loadData(); }
+async function markArrived(id){
+  const p=state.products.find(p=>p.id===id);
+  if(!p) return alert('Товар не найден');
+  if(productStatus(p)!=='В пути') return alert('Отметить поступление можно только для товара в пути');
+  const before=snapshotProduct(p);
+  const date=prompt('Дата поступления',today()); if(!date) return;
+  const patch={arrival_date:date,status:'В продаже',updated_at:new Date().toISOString()};
+  if(supabaseClient&&sessionUser){
+    const {data,error}=await supabaseClient.from('products').update(patch).eq('id',id).is('sale_date',null).eq('archived',false).select().single();
+    if(error) return alert('Не удалось отметить поступление. Возможно, товар уже изменён другим пользователем: '+error.message);
+    await addLog('Поступление товара',id,diffText(before, snapshotProduct(data)) || date);
+  } else {p.arrival_date=date; p.status='В продаже'; saveLocal(); await addLog('Поступление товара',id,diffText(before, snapshotProduct(p)) || date);}
+  await loadData(); }
+async function archiveProduct(id){
+  const p=state.products.find(p=>p.id===id);
+  if(!p) return alert('Товар не найден');
+  if(productStatus(p)==='Продан') return alert('Проданный товар нельзя архивировать из списка. Он уже закрыт продажей.');
+  const before=snapshotProduct(p);
+  if(!confirm(`Перенести товар «${p.name}» в архив?`)) return;
+  const patch={archived:true,status:'Архив',updated_at:new Date().toISOString()};
+  if(supabaseClient&&sessionUser){const {data,error}=await supabaseClient.from('products').update(patch).eq('id',id).is('sale_date',null).select().single(); if(error) return alert('Не удалось архивировать. Возможно, товар уже продан или изменён: '+error.message); await addLog('Архивирование товара',id,diffText(before, snapshotProduct(data)) || p.name);} else {p.archived=true; p.status='Архив'; saveLocal(); await addLog('Архивирование товара',id,diffText(before, snapshotProduct(p)) || p.name);}
+  await loadData(); }
 function editProduct(id){const p=state.products.find(x=>x.id===id); productModalTitle.textContent='Редактировать товар'; productId.value=p.id; pName.value=p.name||''; pCategory.value=p.category||''; pCost.value=p.cost||0; pPlan.value=p.planned_sale_price||0; pPurchaseDate.value=p.purchase_date||''; pArrivalDate.value=p.arrival_date||''; pSource.value=p.source||''; pOwner.value=p.owner||''; pComment.value=p.comment||''; openModal('productModal');}
-function openSale(id){const p=state.products.find(x=>x.id===id); if(productStatus(p)!=='В продаже') return alert('Продать можно только товар в продаже'); saleProductId.value=id; salePrice.value=p.planned_sale_price||''; saleDate.value=today(); soldBy.value=currentName(); openModal('saleModal');}
-async function confirmSale(){const id=saleProductId.value; const price=Number(salePrice.value)||0; if(price<=0) return alert('Цена продажи должна быть больше 0'); const row={actual_sale_price:price,sale_date:saleDate.value||today(),sold_by:soldBy.value||currentName(),status:'Продан',updated_at:new Date().toISOString()}; if(supabaseClient&&sessionUser){const {error}=await supabaseClient.from('products').update(row).eq('id',id); if(error) return alert(error.message);} else {Object.assign(state.products.find(p=>p.id===id),row); saveLocal();} await addFinance({type:'Продажа',amount:Math.abs(price),product_id:id,date:row.sale_date,comment:'Авто: продажа товара'}); await addLog('Продажа товара',id,fmtRub(price)); closeModal('saleModal'); await loadData();}
+function openSale(id){const p=state.products.find(x=>x.id===id); if(!p) return alert('Товар не найден'); if(productStatus(p)!=='В продаже') return alert('Продать можно только товар в продаже'); if(p.sale_date||p.actual_sale_price) return alert('Этот товар уже отмечен как проданный'); saleProductId.value=id; salePrice.value=p.planned_sale_price||''; saleDate.value=today(); soldBy.value=currentName(); openModal('saleModal');}
+async function confirmSale(){
+  const id=saleProductId.value; const price=Number(salePrice.value)||0;
+  if(price<=0) return alert('Цена продажи должна быть больше 0');
+  let p=state.products.find(p=>p.id===id);
+  if(!p) return alert('Товар не найден');
+  if(productStatus(p)!=='В продаже') return alert('Продажа отменена: товар уже не в статусе «В продаже». Обнови данные.');
+  const before=snapshotProduct(p);
+  const row={actual_sale_price:price,sale_date:saleDate.value||today(),sold_by:soldBy.value||currentName(),status:'Продан',updated_at:new Date().toISOString()};
+  if(supabaseClient&&sessionUser){
+    const {data,error}=await supabaseClient.from('products').update(row).eq('id',id).is('sale_date',null).eq('archived',false).select().single();
+    if(error) return alert('Продажа не проведена. Возможно, другой пользователь уже продал или изменил товар: '+error.message);
+    p=data;
+  } else {Object.assign(p,row); saveLocal();}
+  await addFinance({type:'Продажа',amount:Math.abs(price),product_id:id,date:row.sale_date,comment:'Авто: продажа товара'});
+  await addLog('Продажа товара',id,diffText(before, snapshotProduct(p)) || fmtRub(price));
+  closeModal('saleModal'); await loadData();}
 async function saveFinance(){const amount=Number(fAmount.value)||0; if(!amount) return alert('Укажи сумму'); await addFinance({type:fType.value,amount,date:fDate.value||today(),comment:fComment.value}); await addLog('Финансовая операция',null,`${fType.value}: ${fmtRub(amount)}`); closeModal('financeModal'); await loadData();}
 window.editProduct=editProduct; window.openSale=openSale; window.markArrived=markArrived; window.archiveProduct=archiveProduct;
 async function authCheck(){ if(!supabaseClient) return; const {data}=await supabaseClient.auth.getSession(); sessionUser=data.session?.user||null; if(sessionUser){ await loadData(); startRealtime(); } else { stopRealtime(); renderAll(); } }
@@ -276,7 +341,7 @@ loginBtn.onclick=async()=>{ if(!supabaseClient) return alert('Сначала в�
 logoutBtn.onclick=async()=>{ stopRealtime(); if(supabaseClient) await supabaseClient.auth.signOut(); sessionUser=null; await loadData(); };
 loginOpenBtn.onclick=()=>openModal('loginModal'); syncBtn.onclick=loadData; addProductBtn.onclick=()=>{productModalTitle.textContent='Добавить товар'; ['productId','pName','pCategory','pCost','pPlan','pPurchaseDate','pArrivalDate','pSource','pOwner','pComment'].forEach(id=>document.getElementById(id).value=''); pPurchaseDate.value=today(); pOwner.value=currentName(); openModal('productModal');}; addFinanceBtn.onclick=()=>{fDate.value=today(); fAmount.value=''; fComment.value=''; openModal('financeModal');}; saveProductBtn.onclick=saveProduct; confirmSaleBtn.onclick=confirmSale; saveFinanceBtn.onclick=saveFinance; saveConfigBtn.onclick=()=>{localStorage.setItem('mactopus_supabase_config',JSON.stringify({url:supabaseUrl.value.trim(),key:supabaseKey.value.trim()})); alert('Настройки сохранены. Обнови страницу, после входа Realtime включится автоматически.');}; copySqlBtn.onclick=()=>navigator.clipboard.writeText(SQL).then(()=>alert('SQL скопирован')); search.oninput=renderProducts; statusFilter.onchange=renderProducts; financeFilter.onchange=renderFinance;
 demoSeedBtn.onclick=()=>{state={products:[{id:uid(),name:'iPhone 15 Pro 256',category:'iPhone',cost:76000,planned_sale_price:89000,purchase_date:today(),arrival_date:today(),status:'В продаже',created_by:'demo'},{id:uid(),name:'AirPods Pro 2',category:'AirPods',cost:14500,planned_sale_price:18500,purchase_date:today(),arrival_date:null,status:'В пути',created_by:'demo'}],finance:[],logs:[]}; state.finance=[{id:uid(),type:'Закупка',amount:-76000,date:today(),product_id:state.products[0].id,user_name:'demo',comment:'Демо закупка',created_at:new Date().toISOString()},{id:uid(),type:'Закупка',amount:-14500,date:today(),product_id:state.products[1].id,user_name:'demo',comment:'Демо закупка',created_at:new Date().toISOString()},{id:uid(),type:'Инвестиция',amount:150000,date:today(),user_name:'demo',comment:'Старт',created_at:new Date().toISOString()}]; state.logs=[{id:uid(),action:'Загрузка демо',user_name:'demo',details:'Стартовые данные',created_at:new Date().toISOString()}]; saveLocal(); renderAll();};
-exportJsonBtn.onclick=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='mactopus_backup.json'; a.click();};
+exportJsonBtn.onclick=()=>{const backup={exported_at:new Date().toISOString(),exported_by:currentName(),version:'3.1',...state}; const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='mactopus_backup_'+new Date().toISOString().slice(0,10)+'.json'; a.click();};
 importJson.onchange=async(e)=>{const file=e.target.files[0]; if(!file) return; state=JSON.parse(await file.text()); saveLocal(); renderAll();};
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active')); b.classList.add('active'); document.querySelectorAll('.section').forEach(s=>s.classList.remove('active')); document.getElementById(b.dataset.tab).classList.add('active'); title.textContent=b.textContent.replace(/[📊📦💰🧾⚙️]/g,'').trim();});
 initClient(); authCheck();
