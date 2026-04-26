@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Mactopus ERP 3.7 — Products Pro / Supabase</title>
+<title>Mactopus ERP 5.0 — Stable Cleanup / Supabase</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
@@ -47,7 +47,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
 <div class="app">
   <aside class="side">
     <div class="brand">Mactopus ERP</div>
-    <div class="sub">Версия 3.7 Products Pro/Supabase<br>3 пользователя, все с админским доступом. Полировка интерфейса: аккуратные KPI, статусы, таблицы, мобильная адаптация и сохранение всей текущей бизнес-логики.</div>
+    <div class="sub">Версия 5.0 Stable Cleanup/Supabase<br>3 пользователя, все с админским доступом. Полировка интерфейса: аккуратные KPI, статусы, таблицы, мобильная адаптация и сохранение всей текущей бизнес-логики.</div>
     <div class="nav">
       <button class="active" data-tab="dashboard">📊 Дашборд</button>
       <button data-tab="products">📦 Товары</button>
@@ -56,7 +56,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
       <button data-tab="log">🧾 Журнал</button>
       <button data-tab="settings">⚙️ Настройки</button>
     </div>
-    <div class="footerNote">Realtime-версия: изменения подтягиваются без ручного обновления.<br><br><b style="color:#dbe7ff">4.5:</b> добавлено массовое назначение цвета для старых товаров и фильтр «без цвета».</div>
+    <div class="footerNote">Realtime-версия: изменения подтягиваются без ручного обновления.<br><br><b style="color:#dbe7ff">5.0:</b> стабилизация добавления товара, убраны дубли ID, добавлена обработка ошибок.</div>
   </aside>
   <main class="main">
     <div class="top">
@@ -92,7 +92,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
     </section>
 
     <section id="products" class="section">
-      <div class="toolbar"><div><h2 style="margin:0">Товары</h2><div class="hint">Операционный экран: поиск, быстрые фильтры и действия по статусу товара.</div></div><button class="btn green" id="addProductBtn">+ Добавить товар</button></div>
+      <div class="toolbar"><div><h2 style="margin:0">Товары</h2><div class="hint">Операционный экран: поиск, быстрые фильтры и действия по статусу товара.</div></div><button class="btn green addProductBtn" type="button">+ Добавить товар</button></div>
       <div class="quickFilters">
         <button class="btn secondary" onclick="quickFilter('all')">Все</button>
         <button class="btn secondary" onclick="quickFilter('В продаже')">В продаже</button>
@@ -102,7 +102,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
         <button class="btn secondary" onclick="quickFilter('stuck')">Зависло</button>
         <button class="btn secondary" onclick="quickFilter('lowmargin')">Маржа &lt; 15%</button>
       </div>
-      <div class="toolbar"><div class="row"><input class="input" id="search" placeholder="Поиск: модель, категория, цвет, покупатель, трек" style="width:320px"><select class="select" id="statusFilter" style="width:210px"><option value="all">Все статусы</option><option>В пути</option><option>В продаже</option><option>В доставке</option><option>Продан</option><option>Архив</option><option value="colorless">Без цвета</option><option value="stuck">Зависло > 30 дней</option><option value="lowmargin">Маржа < 15%</option></select></div><button class="btn green" id="addProductBtn">+ Добавить товар</button></div>
+      <div class="toolbar"><div class="row"><input class="input" id="search" placeholder="Поиск: модель, категория, цвет, покупатель, трек" style="width:320px"><select class="select" id="statusFilter" style="width:210px"><option value="all">Все статусы</option><option>В пути</option><option>В продаже</option><option>В доставке</option><option>Продан</option><option>Архив</option><option value="colorless">Без цвета</option><option value="stuck">Зависло > 30 дней</option><option value="lowmargin">Маржа < 15%</option></select></div><button class="btn green addProductBtn" type="button">+ Добавить товар</button></div>
       <div class="card" style="margin-bottom:14px;padding:14px"><div class="row" style="justify-content:space-between"><div class="hint">Выбрано товаров: <b id="selectedCount">0</b>. Для старых импортированных позиций можно быстро назначить цвет пачкой.</div><div class="row"><button class="btn secondary" onclick="selectVisibleProducts()">Выбрать видимые</button><button class="btn yellow" onclick="bulkSetColor()">🎨 Назначить цвет</button><button class="btn secondary" onclick="clearProductSelection()">Снять выбор</button></div></div></div>
       <div class="tablewrap"><table><thead><tr><th style="width:44px">✓</th><th>ID</th><th>Название</th><th>Статус</th><th>Закупка</th><th>Поступление</th><th>Себестоимость</th><th>Продажа / ожидание</th><th>Прибыль</th><th>Маржа</th><th>Дни</th><th>Ответственный</th><th>Действия</th></tr></thead><tbody id="productsBody"></tbody></table></div>
     </section>
@@ -167,7 +167,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
 
 <div class="modal" id="loginModal"><div class="modalbox"><h2>Вход в Mactopus ERP</h2><div class="formgrid"><div class="field"><label>Email</label><input class="input" id="loginEmail" type="email" autocomplete="email" inputmode="email"></div><div class="field"><label>Пароль</label><input class="input" id="loginPassword" type="password" autocomplete="current-password"></div><div class="field"><label>&nbsp;</label><button class="btn" id="loginBtn" type="button" style="width:100%">Войти</button></div></div><div id="loginMessage" class="alert" style="display:none;margin-top:12px"></div><div class="alert" style="margin-top:12px">Вход только для пользователей, созданных в Supabase → Authentication → Users. Если с телефона кнопка не срабатывает, открой сайт в Safari/Chrome, не во встроенном браузере Telegram/WhatsApp.</div><button class="btn secondary" onclick="closeModal('loginModal')" style="margin-top:12px">Закрыть</button></div></div>
 
-<div class="modal" id="productModal"><div class="modalbox"><h2 id="productModalTitle">Товар</h2><input type="hidden" id="productId"><div class="formgrid"><div class="field"><label>Название</label><input class="input" id="pName"></div><div class="field"><label>Категория</label><input class="input" id="pCategory" placeholder="iPhone / AirPods / Mac"></div><div class="field"><label>Цвет</label><input class="input" id="pColor" placeholder="Midnight / Silver / Black"></div><div class="field"><label>Себестоимость за 1 шт.</label><input class="input" id="pCost" type="number"></div><div class="field"><label>Плановая цена продажи за 1 шт.</label><input class="input" id="pPlan" type="number"></div><div class="field" id="pQuantityField"><label>Количество, шт.</label><input class="input" id="pQuantity" type="number" min="1" step="1" value="1"></div><div class="field"><label>Дата закупки</label><input class="input" id="pPurchaseDate" type="date"></div><div class="field"><label>Дата поступления</label><input class="input" id="pArrivalDate" type="date"></div><div class="field"><label>Поставщик / источник</label><input class="input" id="pSource"></div><div class="field"><label>Ответственный</label><input class="input" id="pOwner"></div><div class="field"><label>Комментарий</label><input class="input" id="pComment"></div></div><div class="row" style="margin-top:14px"><button class="btn green" id="saveProductBtn">Сохранить</button><button class="btn secondary" onclick="closeModal('productModal')">Закрыть</button></div></div></div>
+<div class="modal" id="productModal"><div class="modalbox"><h2 id="productModalTitle">Товар</h2><div id="productMessage" class="alert" style="display:none;margin-bottom:12px"></div><input type="hidden" id="productId"><div class="formgrid"><div class="field"><label>Название</label><input class="input" id="pName"></div><div class="field"><label>Категория</label><input class="input" id="pCategory" placeholder="iPhone / AirPods / Mac"></div><div class="field"><label>Цвет</label><input class="input" id="pColor" placeholder="Midnight / Silver / Black"></div><div class="field"><label>Себестоимость за 1 шт.</label><input class="input" id="pCost" type="number"></div><div class="field"><label>Плановая цена продажи за 1 шт.</label><input class="input" id="pPlan" type="number"></div><div class="field" id="pQuantityField"><label>Количество, шт.</label><input class="input" id="pQuantity" type="number" min="1" step="1" value="1"></div><div class="field"><label>Дата закупки</label><input class="input" id="pPurchaseDate" type="date"></div><div class="field"><label>Дата поступления</label><input class="input" id="pArrivalDate" type="date"></div><div class="field"><label>Поставщик / источник</label><input class="input" id="pSource"></div><div class="field"><label>Ответственный</label><input class="input" id="pOwner"></div><div class="field"><label>Комментарий</label><input class="input" id="pComment"></div></div><div class="row" style="margin-top:14px"><button class="btn green" id="saveProductBtn">Сохранить</button><button class="btn secondary" onclick="closeModal('productModal')">Закрыть</button></div></div></div>
 
 <div class="modal" id="saleModal"><div class="modalbox"><h2>Продажа товара</h2><input type="hidden" id="saleProductId"><div class="formgrid"><div class="field"><label>Цена продажи</label><input class="input" id="salePrice" type="number"></div><div class="field"><label>Дата продажи</label><input class="input" id="saleDate" type="date"></div><div class="field"><label>Кто продал</label><input class="input" id="soldBy"></div></div><div class="row" style="margin-top:14px"><button class="btn green" id="confirmSaleBtn">Провести продажу</button><button class="btn secondary" onclick="closeModal('saleModal')">Закрыть</button></div></div></div>
 
@@ -637,16 +637,41 @@ function renderFinance(){
 }
 function renderLog(){document.getElementById('logBody').innerHTML=(state.logs||[]).map(x=>{const p=state.products.find(p=>p.id===x.product_id); return `<tr><td>${new Date(x.created_at).toLocaleString('ru-RU')}</td><td>${esc(x.action)}</td><td>${esc(x.user_name||'—')}</td><td>${esc(p?.name||'—')}</td><td>${esc(x.details||'')}</td></tr>`}).join('')||'<tr><td colspan="5">Журнал пуст</td></tr>';}
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
+function showProductMessage(text, kind='error'){
+  const box=document.getElementById('productMessage');
+  if(!box) return alert(text);
+  box.style.display='block';
+  box.textContent=text;
+  box.style.borderColor = kind==='error' ? 'rgba(255,90,90,.45)' : 'rgba(91,140,255,.35)';
+  box.style.background = kind==='error' ? 'rgba(255,90,90,.10)' : 'rgba(91,140,255,.10)';
+}
+function clearProductMessage(){
+  const box=document.getElementById('productMessage');
+  if(box){ box.style.display='none'; box.textContent=''; }
+}
+function formValue(id){ return (document.getElementById(id)?.value ?? ''); }
+function openNewProduct(){
+  clearProductMessage();
+  const title=document.getElementById('productModalTitle'); if(title) title.textContent='Добавить товар';
+  ['productId','pName','pCategory','pColor','pCost','pPlan','pPurchaseDate','pArrivalDate','pSource','pOwner','pComment'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  const qty=document.getElementById('pQuantity'); if(qty) qty.value=1;
+  const qf=document.getElementById('pQuantityField'); if(qf) qf.style.display='block';
+  const pd=document.getElementById('pPurchaseDate'); if(pd) pd.value=today();
+  const owner=document.getElementById('pOwner'); if(owner) owner.value=currentName();
+  openModal('productModal');
+}
+window.openNewProduct=openNewProduct;
+
 async function saveProduct(){
   const id=document.getElementById('productId').value;
   const existing = id ? state.products.find(p=>p.id===id) : null;
   const before = snapshotProduct(existing);
   const quantityInput = document.getElementById('pQuantity');
   const quantity = id ? 1 : Math.max(1, Math.floor(Number(quantityInput?.value || 1)));
-  const row={name:pName.value.trim(),category:pCategory.value.trim(),color:(document.getElementById('pColor')?.value||'').trim(),cost:Number(pCost.value)||0,planned_sale_price:Number(pPlan.value)||0,purchase_date:pPurchaseDate.value||null,arrival_date:pArrivalDate.value||null,source:pSource.value.trim(),owner:pOwner.value.trim(),comment:pComment.value.trim()};
-  if(!row.name) return alert('Укажи название');
-  if(row.cost<=0) return alert('Себестоимость за 1 шт. должна быть больше 0');
-  if(quantity > 100) return alert('Слишком большое количество для одной партии. Максимум 100 шт.');
+  const row={name:formValue('pName').trim(),category:formValue('pCategory').trim(),color:formValue('pColor').trim(),cost:Number(formValue('pCost'))||0,planned_sale_price:Number(formValue('pPlan'))||0,purchase_date:formValue('pPurchaseDate')||null,arrival_date:formValue('pArrivalDate')||null,source:formValue('pSource').trim(),owner:formValue('pOwner').trim(),comment:formValue('pComment').trim()};
+  if(!row.name) return showProductMessage('Укажи название');
+  if(row.cost<=0) return showProductMessage('Себестоимость за 1 шт. должна быть больше 0');
+  if(quantity > 100) return showProductMessage('Слишком большое количество для одной партии. Максимум 100 шт.');
   if(!id) row.status=row.arrival_date?'В продаже':'В пути';
   if(id){
     if(existing && productStatus(existing)==='Продан'){
@@ -970,7 +995,7 @@ loginBtn.addEventListener('click', handleLogin);
 loginPassword.addEventListener('keydown', e=>{ if(e.key==='Enter') handleLogin(); });
 loginEmail.addEventListener('keydown', e=>{ if(e.key==='Enter') loginPassword.focus(); });
 logoutBtn.onclick=async()=>{ stopRealtime(); if(supabaseClient) await supabaseClient.auth.signOut(); sessionUser=null; await loadData(); };
-loginOpenBtn.onclick=()=>openModal('loginModal'); syncBtn.onclick=loadData; addProductBtn.onclick=()=>{productModalTitle.textContent='Добавить товар'; ['productId','pName','pCategory','pColor','pCost','pPlan','pPurchaseDate','pArrivalDate','pSource','pOwner','pComment'].forEach(id=>document.getElementById(id).value=''); if(document.getElementById('pQuantity')) pQuantity.value=1; if(document.getElementById('pQuantityField')) pQuantityField.style.display='block'; pPurchaseDate.value=today(); pOwner.value=currentName(); openModal('productModal');}; addFinanceBtn.onclick=openNewFinance; saveProductBtn.onclick=saveProduct; confirmSaleBtn.onclick=confirmSale; confirmDeliveryBtn.onclick=confirmDelivery; saveFinanceBtn.onclick=saveFinance; saveConfigBtn.onclick=()=>{localStorage.setItem('mactopus_supabase_config',JSON.stringify({url:supabaseUrl.value.trim(),key:supabaseKey.value.trim()})); alert('Настройки сохранены. Обнови страницу, после входа Realtime включится автоматически.');}; copySqlBtn.onclick=()=>navigator.clipboard.writeText(SQL).then(()=>alert('SQL скопирован')); search.oninput=renderProducts; statusFilter.onchange=renderProducts; financeFilter.onchange=renderFinance; if(document.getElementById('inventorySearch')) inventorySearch.oninput=renderInventory;
+loginOpenBtn.onclick=()=>openModal('loginModal'); syncBtn.onclick=loadData; document.querySelectorAll('.addProductBtn').forEach(btn=>btn.onclick=openNewProduct); addFinanceBtn.onclick=openNewFinance; saveProductBtn.onclick=saveProduct; confirmSaleBtn.onclick=confirmSale; confirmDeliveryBtn.onclick=confirmDelivery; saveFinanceBtn.onclick=saveFinance; saveConfigBtn.onclick=()=>{localStorage.setItem('mactopus_supabase_config',JSON.stringify({url:supabaseUrl.value.trim(),key:supabaseKey.value.trim()})); alert('Настройки сохранены. Обнови страницу, после входа Realtime включится автоматически.');}; copySqlBtn.onclick=()=>navigator.clipboard.writeText(SQL).then(()=>alert('SQL скопирован')); search.oninput=renderProducts; statusFilter.onchange=renderProducts; financeFilter.onchange=renderFinance; if(document.getElementById('inventorySearch')) inventorySearch.oninput=renderInventory;
 demoSeedBtn.onclick=()=>{state={products:[{id:uid(),name:'iPhone 15 Pro 256',category:'iPhone',cost:76000,planned_sale_price:89000,purchase_date:today(),arrival_date:today(),status:'В продаже',created_by:'demo'},{id:uid(),name:'AirPods Pro 2',category:'AirPods',cost:14500,planned_sale_price:18500,purchase_date:today(),arrival_date:null,status:'В пути',created_by:'demo'}],finance:[],logs:[]}; state.finance=[{id:uid(),type:'Закупка',amount:-76000,date:today(),product_id:state.products[0].id,user_name:'demo',comment:'Демо закупка',created_at:new Date().toISOString()},{id:uid(),type:'Закупка',amount:-14500,date:today(),product_id:state.products[1].id,user_name:'demo',comment:'Демо закупка',created_at:new Date().toISOString()},{id:uid(),type:'Инвестиция',amount:150000,date:today(),user_name:'demo',comment:'Старт',created_at:new Date().toISOString()}]; state.logs=[{id:uid(),action:'Загрузка демо',user_name:'demo',details:'Стартовые данные',created_at:new Date().toISOString()}]; saveLocal(); renderAll();};
 exportJsonBtn.onclick=()=>{const backup={exported_at:new Date().toISOString(),exported_by:currentName(),version:'3.6.3',...state}; const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='mactopus_backup_'+new Date().toISOString().slice(0,10)+'.json'; a.click();};
 importJson.onchange=async(e)=>{const file=e.target.files[0]; if(!file) return; state=JSON.parse(await file.text()); saveLocal(); renderAll();};
