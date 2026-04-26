@@ -449,6 +449,7 @@ function actionButtonsForProduct(p, st){
     ${st==='В пути'?`<button class="btn yellow" onclick="markArrived('${id}')">📥 Поступил</button>`:''}
     ${st==='В продаже'?`<button class="btn yellow" onclick="openDelivery('${id}')">🚚 Отправить</button><button class="btn green" onclick="openSale('${id}')">💰 Продать</button>`:''}
     ${st==='В доставке'?`<button class="btn green" onclick="paymentReceived('${id}')">💵 Оплата</button><button class="btn secondary" onclick="returnFromDelivery('${id}')">↩️ Возврат</button>`:''}
+    ${st==='Продан'?`<button class="btn danger" onclick="cancelSale('${id}')">↩️ Удалить продажу</button>`:''}
     ${st!=='Архив' && st!=='Продан'?`<button class="btn danger" onclick="archiveProduct('${id}')">🗑 Архив</button>`:''}
   </div>`;
 }
@@ -741,6 +742,33 @@ async function confirmSale(){
   await addFinance({type:'Продажа',amount:Math.abs(price),product_id:id,date:row.sale_date,comment:st==='В доставке'?'Авто: оплата после доставки':'Авто: прямая продажа товара'});
   await addLog(st==='В доставке'?'Оплата получена':'Продажа товара',id,diffText(before, snapshotProduct(p)) || fmtRub(price));
   closeModal('saleModal'); await loadData();}
+async function cancelSale(id){
+  const p=(state.products||[]).find(x=>x.id===id);
+  if(!p) return alert('Товар не найден');
+  if(productStatus(p)!=='Продан') return alert('Удалить продажу можно только у товара со статусом «Продан».');
+  const saleOps=(state.finance||[]).filter(x=>x.product_id===id && x.type==='Продажа');
+  const saleSum=saleOps.reduce((s,x)=>s+Number(x.amount||0),0);
+  if(!confirm('Удалить продажу по товару «'+p.name+'»?\n\nТовар вернётся в статус «В продаже», цена продажи и дата продажи будут очищены.\nФинансовые операции типа «Продажа» по этому товару будут удалены.\nЭто изменит Cash на '+fmtRub(-saleSum)+'.')) return;
+  if(!confirm('Подтверди удаление продажи ещё раз. Действие нельзя отменить.')) return;
+  const before=snapshotProduct(p);
+  const row={actual_sale_price:0,sale_date:null,payment_date:null,sold_by:null,status:p.arrival_date?'В продаже':'В пути',updated_at:new Date().toISOString()};
+  if(supabaseClient&&sessionUser){
+    if(saleOps.length){
+      const ids=saleOps.map(x=>x.id);
+      const {error:finError}=await supabaseClient.from('finance').delete().in('id',ids);
+      if(finError) return alert('Не удалось удалить финоперации продажи: '+finError.message);
+    }
+    const {data,error}=await supabaseClient.from('products').update(row).eq('id',id).select().single();
+    if(error) return alert('Не удалось отменить продажу: '+error.message);
+    await addLog('Удаление продажи',id,diffText(before, snapshotProduct(data)) + (saleOps.length?'; удалено финопераций: '+saleOps.length+', сумма: '+fmtRub(saleSum):'; финопераций продажи не найдено'));
+  } else {
+    state.finance=state.finance.filter(x=>!(x.product_id===id && x.type==='Продажа'));
+    Object.assign(p,row);
+    await addLog('Удаление продажи',id,diffText(before, snapshotProduct(p)) + (saleOps.length?'; удалено финопераций: '+saleOps.length+', сумма: '+fmtRub(saleSum):''));
+    saveLocal();
+  }
+  await loadData();
+}
 async function deleteFinance(id){
   const item=(state.finance||[]).find(x=>x.id===id);
   if(!item) return alert('Финансовая операция не найдена');
@@ -773,7 +801,7 @@ async function deleteProduct(id){
 }
 function normalizeFinanceAmount(type, value){ const raw = Number(value) || 0; const abs = Math.abs(raw); if(["Вывод","Закупка","Расход","Комиссия"].includes(type)) return -abs; if(["Инвестиция","Продажа"].includes(type)) return abs; return raw; }
 async function saveFinance(){ const rawAmount=Number(fAmount.value)||0; if(!rawAmount) return alert("Укажи сумму"); const type=fType.value; const amount=normalizeFinanceAmount(type, rawAmount); await addFinance({type,amount,date:fDate.value||today(),comment:fComment.value}); await addLog("Финансовая операция",null,`${type}: ${fmtRub(amount)}`); closeModal("financeModal"); await loadData(); }
-window.editProduct=editProduct; window.openSale=openSale; window.openDelivery=openDelivery; window.paymentReceived=paymentReceived; window.returnFromDelivery=returnFromDelivery; window.markArrived=markArrived; window.archiveProduct=archiveProduct; window.deleteProduct=deleteProduct; window.deleteFinance=deleteFinance;
+window.editProduct=editProduct; window.openSale=openSale; window.openDelivery=openDelivery; window.paymentReceived=paymentReceived; window.returnFromDelivery=returnFromDelivery; window.markArrived=markArrived; window.archiveProduct=archiveProduct; window.cancelSale=cancelSale; window.deleteProduct=deleteProduct; window.deleteFinance=deleteFinance;
 async function authCheck(){
   if(!supabaseClient) return;
   try{
