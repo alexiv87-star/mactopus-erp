@@ -56,6 +56,51 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
 @media(max-width:1280px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:920px){.app{grid-template-columns:1fr}.side{position:relative;height:auto;padding:18px}.nav{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:18px}.main{padding:18px}.top{display:grid}.userbar{justify-content:flex-start}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.formgrid,.setup,.split{grid-template-columns:1fr}.toolbar{display:grid;align-items:stretch}.tablewrap{border-radius:15px}th,td{padding:11px 10px}.mobileOnly{display:block}.h1{font-size:27px}.card{padding:15px}}
 @media(max-width:560px){.nav{grid-template-columns:1fr}.kpis{grid-template-columns:1fr}.btn{width:100%;text-align:center}.row .btn{width:auto}.userbar .btn{width:auto}.modal{padding:10px}.modalbox{border-radius:20px;padding:16px}.brand{font-size:23px}}
+
+
+/* ===== 5.6 Mobile Ready ===== */
+@media(max-width:760px){
+  html,body{min-height:100%;overflow-x:hidden}
+  body{font-size:15px;background:linear-gradient(145deg,#070a0f 0%,#0b111b 62%,#070a0f 100%)}
+  body:before{background-size:28px 28px;opacity:.65}
+  .loginScreen{position:fixed;inset:0;padding:12px;align-items:flex-start;justify-content:center;min-height:100dvh;-webkit-overflow-scrolling:touch}
+  .loginShell{display:flex;flex-direction:column;gap:12px;width:100%;padding:0 0 12px}
+  .loginHero{min-height:auto;padding:20px;border-radius:24px}
+  .loginLogo{font-size:28px}.loginLogo:after{width:54px;height:4px;margin-top:10px}
+  .loginTitle{font-size:27px;line-height:1.08;margin:18px 0 8px;letter-spacing:-.6px}
+  .loginText{font-size:13px;line-height:1.45}.loginBadges{grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}
+  .loginBadge{padding:10px;border-radius:15px}.loginBadge b{font-size:14px}.loginBadge span{font-size:11px;line-height:1.3}
+  .loginCard{padding:18px;border-radius:24px;max-width:none}.loginCard h2{font-size:24px}.loginCard .btn{height:48px}
+  .input,.select,textarea{font-size:16px;min-height:44px}.field label{font-size:11px}
+
+  .app{display:block;min-height:100dvh}.main{padding:14px 12px 96px;min-width:0}
+  .side{position:fixed;left:0;right:0;bottom:0;top:auto;height:auto;padding:8px 8px calc(8px + env(safe-area-inset-bottom));border-right:0;border-top:1px solid rgba(255,255,255,.10);background:rgba(9,13,20,.92);backdrop-filter:blur(18px);z-index:30}
+  .side .brand,.side .sub,.side .footerNote{display:none}
+  .nav{margin:0;display:flex;gap:6px;overflow-x:auto;scroll-snap-type:x proximity;padding:0 2px;-webkit-overflow-scrolling:touch}
+  .nav button{flex:0 0 82px;min-height:52px;text-align:center;padding:7px 6px;border-radius:14px;font-size:11px;line-height:1.15;white-space:normal;scroll-snap-align:start;background:rgba(255,255,255,.035);border-color:rgba(255,255,255,.06)}
+  .nav button:hover{transform:none}.nav button.active{box-shadow:none;border-color:rgba(90,200,250,.42)}
+
+  .top{position:sticky;top:0;z-index:12;margin:-14px -12px 14px;padding:12px;background:rgba(8,12,19,.88);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.08);display:block}
+  .h1{font-size:24px;line-height:1.1}.hint{font-size:12px}.userbar{margin-top:10px;display:flex;gap:6px;justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap;padding-bottom:2px}
+  .pill{font-size:11px;padding:7px 10px;white-space:nowrap}.userbar .btn{width:auto;flex:0 0 auto;padding:8px 10px;font-size:12px}
+
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.kpis .card{min-height:112px}.card{border-radius:18px;padding:14px}.card h3{font-size:15px}.kpi .label{font-size:10px}.kpi .value{font-size:20px}.kpi .small{font-size:11px}
+  .grid{gap:12px}.split{grid-template-columns:1fr}.toolbar{display:grid;gap:10px;margin-bottom:12px}.toolbar .row{display:flex;overflow-x:auto;flex-wrap:nowrap;padding-bottom:2px}
+  .quickFilters{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;margin-bottom:10px;-webkit-overflow-scrolling:touch}.quickFilters .btn{flex:0 0 auto;width:auto;font-size:12px;padding:9px 11px}
+  .row{gap:8px}.row .btn,.actionRow .btn{width:auto}.btn{min-height:40px;padding:9px 12px;border-radius:12px;font-size:13px}.btn.green,.btn.yellow,.btn.danger{box-shadow:none}
+  #addProductBtn,#addPurchaseBtn,#addFinanceBtn{width:100%;height:46px;font-size:14px}
+  #search,#inventorySearch{width:100%!important;max-width:none!important}.select{width:100%!important}
+
+  .tablewrap{margin-left:-2px;margin-right:-2px;border-radius:16px;overflow-x:auto;-webkit-overflow-scrolling:touch;box-shadow:inset -18px 0 20px -20px rgba(255,255,255,.45)}
+  table{min-width:860px}th,td{padding:10px 9px;font-size:12px}th{font-size:10px}.status{font-size:11px;padding:5px 8px}.actionRow{gap:5px}.actionRow .btn{font-size:11px;padding:7px 8px;min-height:34px}
+  .card[style*="margin-bottom:14px"] .row{align-items:flex-start}.card[style*="margin-bottom:14px"] .row .row{width:100%;overflow-x:auto;flex-wrap:nowrap}.card[style*="margin-bottom:14px"] .row .row .btn{flex:0 0 auto}
+
+  .modal{align-items:flex-end;padding:0;background:rgba(0,0,0,.72)}
+  .modalbox{width:100%;max-height:92dvh;border-radius:24px 24px 0 0;padding:18px 14px calc(18px + env(safe-area-inset-bottom));overflow:auto}.modalbox h2{font-size:22px;margin:0 0 14px}
+  .formgrid{grid-template-columns:1fr;gap:10px}.setup{grid-template-columns:1fr}.code{max-height:260px;font-size:11px}
+}
+@media(max-width:380px){.kpis{grid-template-columns:1fr}.loginBadges{grid-template-columns:1fr}.nav button{flex-basis:76px;font-size:10px}.main{padding-left:10px;padding-right:10px}.top{margin-left:-10px;margin-right:-10px;padding-left:10px;padding-right:10px}}
+
 </style>
 </head>
 <body>
@@ -73,7 +118,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
           <div class="loginBadge"><b>🚚 Доставка</b><span>Ожидание оплаты и контроль сроков</span></div>
         </div>
       </div>
-      <div class="loginFoot">Версия 5.5 Bundle System · все пользователи работают с админским доступом</div>
+      <div class="loginFoot">Версия 5.6 Mobile Ready · все пользователи работают с админским доступом</div>
     </div>
     <div class="loginCard">
       <h2>Вход в систему</h2>
