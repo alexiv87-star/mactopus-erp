@@ -607,23 +607,41 @@ function startRealtime(){
     });
 }
 
+function withTimeout(promise, ms=12000, label='операция'){
+  return Promise.race([
+    promise,
+    new Promise((_, reject)=>setTimeout(()=>reject(new Error(label+' не отвечает более '+Math.round(ms/1000)+' сек. Проверь VPN/доступ к Supabase.')), ms))
+  ]);
+}
 async function loadData(opts={}){
-  if(supabaseClient && sessionUser){
-    const [pr,pu,fi,lg] = await Promise.all([
-      supabaseClient.from('products').select('*').order('created_at',{ascending:false}),
-      supabaseClient.from('purchases').select('*').order('created_at',{ascending:false}),
-      supabaseClient.from('finance').select('*').order('created_at',{ascending:false}),
-      supabaseClient.from('activity_log').select('*').order('created_at',{ascending:false}).limit(200)
-    ]);
-    if(pr.error){ if(!opts.silent) alert('Ошибка загрузки products: '+pr.error.message); return; }
-    if(pu.error){ if(!opts.silent) console.warn('purchases not loaded:', pu.error.message); }
-    if(fi.error){ if(!opts.silent) alert('Ошибка загрузки finance: '+fi.error.message); return; }
-    if(lg.error){ if(!opts.silent) alert('Ошибка загрузки log: '+lg.error.message); return; }
-    state.products=pr.data||[]; state.purchases=pu.error?[]:(pu.data||[]); state.finance=fi.data||[]; state.logs=lg.data||[];
-  } else {
-    state = JSON.parse(localStorage.getItem('mactopus_demo_state')||'null') || {products:[],purchases:[],finance:[],logs:[]};
+  try{
+    if(supabaseClient && sessionUser){
+      const requests = Promise.all([
+        supabaseClient.from('products').select('*').order('created_at',{ascending:false}),
+        supabaseClient.from('purchases').select('*').order('created_at',{ascending:false}),
+        supabaseClient.from('finance').select('*').order('created_at',{ascending:false}),
+        supabaseClient.from('activity_log').select('*').order('created_at',{ascending:false}).limit(200)
+      ]);
+      const [pr,pu,fi,lg] = await withTimeout(requests, 15000, 'Загрузка данных Supabase');
+      if(pr.error) throw new Error('products: '+pr.error.message);
+      if(pu.error) console.warn('purchases not loaded:', pu.error.message);
+      if(fi.error) throw new Error('finance: '+fi.error.message);
+      if(lg.error) throw new Error('activity_log: '+lg.error.message);
+      state.products=pr.data||[]; state.purchases=pu.error?[]:(pu.data||[]); state.finance=fi.data||[]; state.logs=lg.data||[];
+    } else {
+      state = JSON.parse(localStorage.getItem('mactopus_demo_state')||'null') || {products:[],purchases:[],finance:[],logs:[]};
+    }
+    renderAll();
+    return true;
+  } catch(err){
+    console.error('loadData failed', err);
+    if(!opts.silent){
+      const msg='Ошибка загрузки данных: '+(err?.message||err)+'. Если используешь PIN-доступ, проверь VPN и anon/RLS-патч.';
+      if(typeof showLoginMessage==='function' && !document.getElementById('loginScreen')?.classList.contains('is-hidden')) showLoginMessage(msg, 'error');
+      else alert(msg);
+    }
+    return false;
   }
-  renderAll();
 }
 function saveLocal(){ if(!supabaseClient || !sessionUser) localStorage.setItem('mactopus_demo_state',JSON.stringify(state)); }
 async function addLog(action, product_id=null, details=''){
@@ -1426,8 +1444,10 @@ async function authCheck(){
   const pinSession = localStorage.getItem('mactopus_pin_session') === 'ok';
   if(pinSession){
     sessionUser={email:'PIN-доступ'};
-    await loadData();
+    updateAuthUI();
     startRealtime();
+    const ok = await loadData({silent:false});
+    if(!ok){ stopRealtime(); }
   } else {
     stopRealtime();
     sessionUser=null;
@@ -1460,8 +1480,18 @@ async function handleLogin(){
     localStorage.setItem('mactopus_pin_session','ok');
     sessionUser={email:'PIN-доступ'};
     showLoginMessage('Вход выполнен. Загружаю данные...');
-    await loadData();
+    updateAuthUI();
     startRealtime();
+    const ok = await loadData({silent:false});
+    if(!ok){
+      // Возвращаем экран входа, чтобы было понятно, что данные не загрузились.
+      stopRealtime();
+      sessionUser=null;
+      localStorage.removeItem('mactopus_pin_session');
+      updateAuthUI();
+    }
+  } catch(e){
+    showLoginMessage('Ошибка входа: '+(e?.message||e), 'error');
   } finally {
     btn.disabled=false; btn.textContent=oldText;
   }
