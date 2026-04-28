@@ -67,7 +67,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
 
     <section id="dashboard" class="section active">
       <div class="grid kpis">
-        <div class="card kpi"><div class="label">Cash</div><div class="value" id="kCash">0 ₽</div><div class="small">Финансовый остаток</div></div>
+        <div class="card kpi"><div class="label">Cash</div><div class="value" id="kCash">0 ₽</div><div class="small" id="kCashNote">Финансы + продажи − закупки</div></div>
         <div class="card kpi"><div class="label">Прибыль</div><div class="value" id="kProfit">0 ₽</div><div class="small">По проданным товарам</div></div><div class="card kpi"><div class="label">Расходы</div><div class="value" id="kExpenses">0 ₽</div><div class="small">Реклама и прочие издержки</div></div>
         <div class="card kpi"><div class="label">В товаре</div><div class="value" id="kStockMoney">0 ₽</div><div class="small">Себестоимость остатков</div></div>
         <div class="card kpi"><div class="label">В пути</div><div class="value" id="kRoad">0</div><div class="small">Куплено, но не поступило</div></div>
@@ -396,8 +396,15 @@ function renderAll(){ renderDashboard(); renderProducts(); renderPurchases(); re
 function renderDashboard(){
   const products=state.products||[], finance=state.finance||[];
   const purchases=state.purchases||[];
+  const soldForCash=products.filter(p=>productStatus(p)==='Продан');
+  const productSalesTotal=soldForCash.reduce((s,p)=>s+Number(p.actual_sale_price||0),0);
   const purchasesTotal=purchases.reduce((s,x)=>s+Number(x.total_amount||0),0);
-  const cash=finance.reduce((s,x)=>s+Number(x.amount||0),0)-purchasesTotal;
+  // Cash 5.4.1: продажи считаем напрямую из проданных товаров,
+  // чтобы Cash не зависел от того, была ли создана старая финоперация «Продажа».
+  // Финоперации типа «Продажа» исключаем, чтобы не задваивать поступления.
+  // Закупки из нового раздела «Закупки» вычитаем отдельно.
+  const financeBase=finance.filter(x=>x.type!=='Продажа').reduce((s,x)=>s+Number(x.amount||0),0);
+  const cash=financeBase + productSalesTotal - purchasesTotal;
   const expenseTypes=['Расход','Издержки','Реклама','Комиссия','Упаковка','Доставка за свой счёт'];
   const expenses=finance.filter(x=>expenseTypes.includes(x.type)).reduce((s,x)=>s+Math.abs(Number(x.amount||0)),0);
   const sold=products.filter(p=>productStatus(p)==='Продан');
@@ -418,6 +425,7 @@ function renderDashboard(){
   const avgMargin=sold.length?sold.reduce((s,p)=>s+margin(p),0)/sold.length:0;
   const stuck=stock.filter(p=>daysBetween(p.arrival_date)>30).length;
   document.getElementById('kCash').textContent=fmtRub(cash); 
+  const cashNote=document.getElementById('kCashNote'); if(cashNote) cashNote.textContent=`Финансы ${fmtRub(financeBase)} + продажи ${fmtRub(productSalesTotal)} − закупки ${fmtRub(purchasesTotal)}`;
   document.getElementById('kProfit').textContent=fmtRub(totalProfit);
   const kExpensesEl=document.getElementById('kExpenses'); if(kExpensesEl) kExpensesEl.textContent=fmtRub(expenses); 
   document.getElementById('kStockMoney').textContent=fmtRub(stockMoney); 
@@ -430,6 +438,7 @@ function renderDashboard(){
   const kdb=document.getElementById('kDeliveryBuyout'); if(kdb) kdb.textContent=pct(deliveryBuyout);
   const kds=document.getElementById('kDeliveryStats'); if(kds) kds.textContent=`${deliveryPayments} оплат / ${deliveryReturns} возвратов`;
   const sig=[]; 
+  sig.push(`💵 Cash считается так: финоперации ${fmtRub(financeBase)} + продажи товаров ${fmtRub(productSalesTotal)} − закупки ${fmtRub(purchasesTotal)} = ${fmtRub(cash)}.`);
   if(road.length) sig.push(`🚚 В пути от поставщика: ${road.length} товар(ов) на ${fmtRub(road.reduce((s,p)=>s+Number(p.cost||0),0))}`);
   if(delivery.length) sig.push(`📦 В доставке покупателю: ${delivery.length} товар(ов), ожидаем ${fmtRub(deliveryMoney)}. Это ещё не выручка.`);
   if(deliveryOverdue.length) sig.push(`🟡 Просроченная доставка >7 дней: ${deliveryOverdue.length} товар(ов), ожидаем ${fmtRub(deliveryOverdue.reduce((s,p)=>s+expectedPayment(p),0))}.`);
@@ -475,7 +484,10 @@ function renderDashboard(){
     if(!insightRows.length) insightRows.push('Пока недостаточно продаж для аналитики по моделям.');
     insights.innerHTML=insightRows.map(x=>`<div class="alert">${x}</div>`).join('');
   }
-  const byDate={}; finance.slice().reverse().forEach(f=>{byDate[f.date]=(byDate[f.date]||0)+Number(f.amount||0)}); 
+  const byDate={};
+  finance.filter(f=>f.type!=='Продажа').forEach(f=>{ const d=f.date||today(); byDate[d]=(byDate[d]||0)+Number(f.amount||0); });
+  soldForCash.forEach(p=>{ const d=p.payment_date||p.sale_date||today(); byDate[d]=(byDate[d]||0)+Number(p.actual_sale_price||0); });
+  purchases.forEach(p=>{ const d=p.purchase_date||today(); byDate[d]=(byDate[d]||0)-Number(p.total_amount||0); });
   const labels=Object.keys(byDate).sort(); let acc=0; const data=labels.map(d=>acc+=byDate[d]); 
   const ctx=document.getElementById('financeChart'); if(chart) chart.destroy(); 
   chart=new Chart(ctx,{type:'line',data:{labels,datasets:[{label:'Cash',data,tension:.35}]},options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#98a2b3'},grid:{color:'#1f2937'}},y:{ticks:{color:'#98a2b3'},grid:{color:'#1f2937'}}}}});
@@ -1093,7 +1105,7 @@ loginEmail.addEventListener('keydown', e=>{ if(e.key==='Enter') loginPassword.fo
 logoutBtn.onclick=async()=>{ stopRealtime(); if(supabaseClient) await supabaseClient.auth.signOut(); sessionUser=null; await loadData(); };
 loginOpenBtn.onclick=()=>openModal('loginModal'); syncBtn.onclick=loadData; document.getElementById('addProductBtn').onclick=()=>{productModalTitle.textContent='Добавить товар'; ['productId','pName','pCategory','pColor','pCost','pPlan','pPurchaseDate','pArrivalDate','pSource','pOwner','pComment'].forEach(id=>{const el=document.getElementById(id); if(el) el.value='';}); if(document.getElementById('pPurchaseId')) pPurchaseId.value=''; if(document.getElementById('pQuantity')) pQuantity.value=1; if(document.getElementById('pQuantityField')) pQuantityField.style.display='block'; pPurchaseDate.value=today(); pOwner.value=currentName(); renderPurchaseSelect(); openModal('productModal');}; if(document.getElementById('addPurchaseBtn')) addPurchaseBtn.onclick=openNewPurchase; addFinanceBtn.onclick=openNewFinance; saveProductBtn.onclick=saveProduct; if(document.getElementById('savePurchaseBtn')) savePurchaseBtn.onclick=savePurchase; confirmSaleBtn.onclick=confirmSale; confirmDeliveryBtn.onclick=confirmDelivery; saveFinanceBtn.onclick=saveFinance; saveConfigBtn.onclick=()=>{localStorage.setItem('mactopus_supabase_config',JSON.stringify({url:supabaseUrl.value.trim(),key:supabaseKey.value.trim()})); alert('Настройки сохранены. Обнови страницу, после входа Realtime включится автоматически.');}; copySqlBtn.onclick=()=>navigator.clipboard.writeText(SQL).then(()=>alert('SQL скопирован')); search.oninput=renderProducts; statusFilter.onchange=renderProducts; financeFilter.onchange=renderFinance; if(document.getElementById('inventorySearch')) inventorySearch.oninput=renderInventory;
 demoSeedBtn.onclick=()=>{state={products:[{id:uid(),name:'iPhone 15 Pro 256',category:'iPhone',cost:76000,planned_sale_price:89000,purchase_date:today(),arrival_date:today(),status:'В продаже',created_by:'demo'},{id:uid(),name:'AirPods Pro 2',category:'AirPods',cost:14500,planned_sale_price:18500,purchase_date:today(),arrival_date:null,status:'В пути',created_by:'demo'}],purchases:[{id:uid(),supplier:'demo',purchase_date:today(),arrival_date:today(),total_amount:90500,comment:'Демо закупка',created_at:new Date().toISOString()}],finance:[],logs:[]}; state.finance=[{id:uid(),type:'Закупка',amount:-76000,date:today(),product_id:state.products[0].id,user_name:'demo',comment:'Демо закупка',created_at:new Date().toISOString()},{id:uid(),type:'Закупка',amount:-14500,date:today(),product_id:state.products[1].id,user_name:'demo',comment:'Демо закупка',created_at:new Date().toISOString()},{id:uid(),type:'Инвестиция',amount:150000,date:today(),user_name:'demo',comment:'Старт',created_at:new Date().toISOString()}]; state.logs=[{id:uid(),action:'Загрузка демо',user_name:'demo',details:'Стартовые данные',created_at:new Date().toISOString()}]; saveLocal(); renderAll();};
-exportJsonBtn.onclick=()=>{const backup={exported_at:new Date().toISOString(),exported_by:currentName(),version:'3.6.3',...state}; const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='mactopus_backup_'+new Date().toISOString().slice(0,10)+'.json'; a.click();};
+exportJsonBtn.onclick=()=>{const backup={exported_at:new Date().toISOString(),exported_by:currentName(),version:'5.4.1',...state}; const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='mactopus_backup_'+new Date().toISOString().slice(0,10)+'.json'; a.click();};
 importJson.onchange=async(e)=>{const file=e.target.files[0]; if(!file) return; state=JSON.parse(await file.text()); saveLocal(); renderAll();};
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active')); b.classList.add('active'); document.querySelectorAll('.section').forEach(s=>s.classList.remove('active')); document.getElementById(b.dataset.tab).classList.add('active'); title.textContent=b.textContent.replace(/[📊📦💰🧾⚙️🏬]/g,'').trim();});
 initClient(); authCheck();
