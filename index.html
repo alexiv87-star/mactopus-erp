@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Mactopus ERP 5.5 — Bundle System / Supabase</title>
+<title>Mactopus ERP 5.6.1 — Mobile Login Fix / Supabase</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
@@ -37,104 +37,17 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
 .actionRow{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .actionRow .btn{padding:7px 10px;font-size:12px}
 @media(max-width:560px){.quickFilters .btn{width:auto}.actionRow .btn{width:auto}}
-
-.loginScreen{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:24px;background:
-  radial-gradient(circle at 18% 8%,rgba(90,200,250,.24),transparent 34%),
-  radial-gradient(circle at 85% 22%,rgba(191,90,242,.18),transparent 30%),
-  linear-gradient(145deg,#070a0f 0%,#0b111b 55%,#070a0f 100%);overflow:auto}
-.loginShell{width:min(1120px,100%);display:grid;grid-template-columns:1.05fr .95fr;gap:22px;align-items:stretch}
-.loginHero,.loginCard{border:1px solid rgba(255,255,255,.09);background:linear-gradient(180deg,rgba(25,34,50,.84),rgba(13,19,30,.92));border-radius:30px;box-shadow:0 28px 90px rgba(0,0,0,.48);position:relative;overflow:hidden}
-.loginHero{padding:34px;min-height:520px;display:flex;flex-direction:column;justify-content:space-between}
-.loginHero:before,.loginCard:before{content:"";position:absolute;inset:0 0 auto 0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent)}
-.loginLogo{font-size:34px;font-weight:950;letter-spacing:-.7px}.loginLogo:after{content:"";display:block;width:70px;height:5px;border-radius:999px;background:linear-gradient(90deg,var(--blue),var(--violet));margin-top:15px}
-.loginTitle{font-size:42px;line-height:1.05;font-weight:950;letter-spacing:-1.1px;margin:24px 0 10px}.loginText{font-size:15px;line-height:1.55;color:var(--muted2);max-width:540px}
-.loginBadges{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:28px}.loginBadge{border:1px solid rgba(255,255,255,.08);background:rgba(8,12,19,.36);border-radius:18px;padding:14px}.loginBadge b{display:block;font-size:18px}.loginBadge span{display:block;color:var(--muted);font-size:12px;margin-top:4px}
-.loginCard{padding:28px;max-width:460px;justify-self:end;width:100%;align-self:center}.loginCard h2{font-size:28px;margin:0 0 8px}.loginCard .hint{margin-bottom:18px}.loginCard .field{margin-bottom:13px}.loginCard .btn{width:100%;padding:13px 16px;font-size:15px}.loginFoot{font-size:12px;color:var(--muted);line-height:1.45;margin-top:16px}
-.loginScreen.is-hidden{display:none}.app.is-hidden{display:none}
-@media(max-width:920px){.loginShell{grid-template-columns:1fr}.loginHero{min-height:auto}.loginCard{justify-self:stretch;max-width:none}.loginTitle{font-size:34px}.loginBadges{grid-template-columns:1fr}}
 ::-webkit-scrollbar{height:10px;width:10px}::-webkit-scrollbar-track{background:rgba(255,255,255,.04)}::-webkit-scrollbar-thumb{background:rgba(154,167,187,.35);border-radius:999px}::-webkit-scrollbar-thumb:hover{background:rgba(154,167,187,.55)}
 @media(max-width:1280px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:920px){.app{grid-template-columns:1fr}.side{position:relative;height:auto;padding:18px}.nav{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:18px}.main{padding:18px}.top{display:grid}.userbar{justify-content:flex-start}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.formgrid,.setup,.split{grid-template-columns:1fr}.toolbar{display:grid;align-items:stretch}.tablewrap{border-radius:15px}th,td{padding:11px 10px}.mobileOnly{display:block}.h1{font-size:27px}.card{padding:15px}}
 @media(max-width:560px){.nav{grid-template-columns:1fr}.kpis{grid-template-columns:1fr}.btn{width:100%;text-align:center}.row .btn{width:auto}.userbar .btn{width:auto}.modal{padding:10px}.modalbox{border-radius:20px;padding:16px}.brand{font-size:23px}}
-
-
-/* ===== 5.6 Mobile Ready ===== */
-@media(max-width:760px){
-  html,body{min-height:100%;overflow-x:hidden}
-  body{font-size:15px;background:linear-gradient(145deg,#070a0f 0%,#0b111b 62%,#070a0f 100%)}
-  body:before{background-size:28px 28px;opacity:.65}
-  .loginScreen{position:fixed;inset:0;padding:12px;align-items:flex-start;justify-content:center;min-height:100dvh;-webkit-overflow-scrolling:touch}
-  .loginShell{display:flex;flex-direction:column;gap:12px;width:100%;padding:0 0 12px}
-  .loginHero{min-height:auto;padding:20px;border-radius:24px}
-  .loginLogo{font-size:28px}.loginLogo:after{width:54px;height:4px;margin-top:10px}
-  .loginTitle{font-size:27px;line-height:1.08;margin:18px 0 8px;letter-spacing:-.6px}
-  .loginText{font-size:13px;line-height:1.45}.loginBadges{grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}
-  .loginBadge{padding:10px;border-radius:15px}.loginBadge b{font-size:14px}.loginBadge span{font-size:11px;line-height:1.3}
-  .loginCard{padding:18px;border-radius:24px;max-width:none}.loginCard h2{font-size:24px}.loginCard .btn{height:48px}
-  .input,.select,textarea{font-size:16px;min-height:44px}.field label{font-size:11px}
-
-  .app{display:block;min-height:100dvh}.main{padding:14px 12px 96px;min-width:0}
-  .side{position:fixed;left:0;right:0;bottom:0;top:auto;height:auto;padding:8px 8px calc(8px + env(safe-area-inset-bottom));border-right:0;border-top:1px solid rgba(255,255,255,.10);background:rgba(9,13,20,.92);backdrop-filter:blur(18px);z-index:30}
-  .side .brand,.side .sub,.side .footerNote{display:none}
-  .nav{margin:0;display:flex;gap:6px;overflow-x:auto;scroll-snap-type:x proximity;padding:0 2px;-webkit-overflow-scrolling:touch}
-  .nav button{flex:0 0 82px;min-height:52px;text-align:center;padding:7px 6px;border-radius:14px;font-size:11px;line-height:1.15;white-space:normal;scroll-snap-align:start;background:rgba(255,255,255,.035);border-color:rgba(255,255,255,.06)}
-  .nav button:hover{transform:none}.nav button.active{box-shadow:none;border-color:rgba(90,200,250,.42)}
-
-  .top{position:sticky;top:0;z-index:12;margin:-14px -12px 14px;padding:12px;background:rgba(8,12,19,.88);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.08);display:block}
-  .h1{font-size:24px;line-height:1.1}.hint{font-size:12px}.userbar{margin-top:10px;display:flex;gap:6px;justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap;padding-bottom:2px}
-  .pill{font-size:11px;padding:7px 10px;white-space:nowrap}.userbar .btn{width:auto;flex:0 0 auto;padding:8px 10px;font-size:12px}
-
-  .kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.kpis .card{min-height:112px}.card{border-radius:18px;padding:14px}.card h3{font-size:15px}.kpi .label{font-size:10px}.kpi .value{font-size:20px}.kpi .small{font-size:11px}
-  .grid{gap:12px}.split{grid-template-columns:1fr}.toolbar{display:grid;gap:10px;margin-bottom:12px}.toolbar .row{display:flex;overflow-x:auto;flex-wrap:nowrap;padding-bottom:2px}
-  .quickFilters{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;margin-bottom:10px;-webkit-overflow-scrolling:touch}.quickFilters .btn{flex:0 0 auto;width:auto;font-size:12px;padding:9px 11px}
-  .row{gap:8px}.row .btn,.actionRow .btn{width:auto}.btn{min-height:40px;padding:9px 12px;border-radius:12px;font-size:13px}.btn.green,.btn.yellow,.btn.danger{box-shadow:none}
-  #addProductBtn,#addPurchaseBtn,#addFinanceBtn{width:100%;height:46px;font-size:14px}
-  #search,#inventorySearch{width:100%!important;max-width:none!important}.select{width:100%!important}
-
-  .tablewrap{margin-left:-2px;margin-right:-2px;border-radius:16px;overflow-x:auto;-webkit-overflow-scrolling:touch;box-shadow:inset -18px 0 20px -20px rgba(255,255,255,.45)}
-  table{min-width:860px}th,td{padding:10px 9px;font-size:12px}th{font-size:10px}.status{font-size:11px;padding:5px 8px}.actionRow{gap:5px}.actionRow .btn{font-size:11px;padding:7px 8px;min-height:34px}
-  .card[style*="margin-bottom:14px"] .row{align-items:flex-start}.card[style*="margin-bottom:14px"] .row .row{width:100%;overflow-x:auto;flex-wrap:nowrap}.card[style*="margin-bottom:14px"] .row .row .btn{flex:0 0 auto}
-
-  .modal{align-items:flex-end;padding:0;background:rgba(0,0,0,.72)}
-  .modalbox{width:100%;max-height:92dvh;border-radius:24px 24px 0 0;padding:18px 14px calc(18px + env(safe-area-inset-bottom));overflow:auto}.modalbox h2{font-size:22px;margin:0 0 14px}
-  .formgrid{grid-template-columns:1fr;gap:10px}.setup{grid-template-columns:1fr}.code{max-height:260px;font-size:11px}
-}
-@media(max-width:380px){.kpis{grid-template-columns:1fr}.loginBadges{grid-template-columns:1fr}.nav button{flex-basis:76px;font-size:10px}.main{padding-left:10px;padding-right:10px}.top{margin-left:-10px;margin-right:-10px;padding-left:10px;padding-right:10px}}
-
 </style>
 </head>
 <body>
-<div class="loginScreen" id="loginScreen">
-  <div class="loginShell">
-    <div class="loginHero">
-      <div>
-        <div class="loginLogo">Mactopus ERP</div>
-        <div class="loginTitle">Учет товара, закупок и денег в одном рабочем окне</div>
-        <div class="loginText">Вход для команды Mactopus. Система синхронизирует товары, закупки, остатки, продажи, комплекты и финансовые операции через Supabase.</div>
-        <div class="loginBadges">
-          <div class="loginBadge"><b>📦 Товары</b><span>Поштучный учет, статусы, комплекты</span></div>
-          <div class="loginBadge"><b>🧾 Закупки</b><span>Партии, поставщики, привязка товаров</span></div>
-          <div class="loginBadge"><b>💰 Cash</b><span>Финансы + продажи − закупки</span></div>
-          <div class="loginBadge"><b>🚚 Доставка</b><span>Ожидание оплаты и контроль сроков</span></div>
-        </div>
-      </div>
-      <div class="loginFoot">Версия 5.6 Mobile Ready · все пользователи работают с админским доступом</div>
-    </div>
-    <div class="loginCard">
-      <h2>Вход в систему</h2>
-      <div class="hint">Введите email и пароль пользователя из Supabase Authentication.</div>
-      <div class="field"><label>Email</label><input class="input" id="loginEmail" type="email" autocomplete="email" inputmode="email" placeholder="name@example.com"></div>
-      <div class="field"><label>Пароль</label><input class="input" id="loginPassword" type="password" autocomplete="current-password" placeholder="••••••••"></div>
-      <button class="btn" id="loginBtn" type="button">Войти</button>
-      <div id="loginMessage" class="alert" style="display:none;margin-top:14px"></div>
-      <div class="loginFoot">Лучше открывать в Safari/Chrome. Если вход не проходит с телефона — проверь VPN/Private Relay и доступ к Supabase.</div>
-    </div>
-  </div>
-</div>
-<div class="app" id="appRoot">
+<div class="app">
   <aside class="side">
     <div class="brand">Mactopus ERP</div>
-    <div class="sub">Версия 5.5 Bundle System/Supabase<br>3 пользователя, все с админским доступом. Полировка интерфейса: аккуратные KPI, статусы, таблицы, мобильная адаптация и сохранение всей текущей бизнес-логики.</div>
+    <div class="sub">Версия 5.6.1 Mobile Login Fix/Supabase<br>3 пользователя, все с админским доступом. Полировка интерфейса: аккуратные KPI, статусы, таблицы, мобильная адаптация и сохранение всей текущей бизнес-логики.</div>
     <div class="nav">
       <button class="active" data-tab="dashboard">📊 Дашборд</button>
       <button data-tab="products">📦 Товары</button>
@@ -144,7 +57,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
       <button data-tab="log">🧾 Журнал</button>
       <button data-tab="settings">⚙️ Настройки</button>
     </div>
-    <div class="footerNote">Realtime-версия: изменения подтягиваются без ручного обновления.<br><br><b style="color:#dbe7ff">5.5:</b> добавлены комплекты: можно выбрать несколько товаров, собрать комплект и продать его одним действием. Улучшена страница входа.</div>
+    <div class="footerNote">Realtime-версия: изменения подтягиваются без ручного обновления.<br><br><b style="color:#dbe7ff">5.6.1:</b> исправлен вход с телефона: стабильная auth-сессия через localStorage и резервный вход через REST/XHR.</div>
   </aside>
   <main class="main">
     <div class="top">
@@ -192,7 +105,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
         <button class="btn secondary" onclick="quickFilter('Архив')">Архив</button>
       </div>
       <div class="toolbar"><div class="row"><input class="input" id="search" placeholder="Поиск: модель, категория, цвет, покупатель, трек" style="width:320px"><select class="select" id="statusFilter" style="width:210px"><option value="all">Все статусы</option><option>В пути</option><option>В продаже</option><option>В доставке</option><option>Продан</option><option>Архив</option><option value="colorless">Без цвета</option><option value="stuck">Зависло > 30 дней</option><option value="lowmargin">Маржа < 15%</option></select></div><div class="hint">Добавление товара — через верхнюю кнопку.</div></div>
-      <div class="card" style="margin-bottom:14px;padding:14px"><div class="row" style="justify-content:space-between"><div class="hint">Выбрано товаров: <b id="selectedCount">0</b>. Для старых импортированных позиций можно быстро назначить цвет пачкой.</div><div class="row"><button class="btn secondary" onclick="selectVisibleProducts()">Выбрать видимые</button><button class="btn yellow" onclick="bulkSetColor()">🎨 Назначить цвет</button><button class="btn green" onclick="createBundle()">📦 Собрать комплект</button><button class="btn secondary" onclick="clearProductSelection()">Снять выбор</button></div></div></div>
+      <div class="card" style="margin-bottom:14px;padding:14px"><div class="row" style="justify-content:space-between"><div class="hint">Выбрано товаров: <b id="selectedCount">0</b>. Для старых импортированных позиций можно быстро назначить цвет пачкой.</div><div class="row"><button class="btn secondary" onclick="selectVisibleProducts()">Выбрать видимые</button><button class="btn yellow" onclick="bulkSetColor()">🎨 Назначить цвет</button><button class="btn secondary" onclick="clearProductSelection()">Снять выбор</button></div></div></div>
       <div class="tablewrap"><table><thead><tr><th style="width:44px">✓</th><th>ID</th><th>Название</th><th>Статус</th><th>Закупка</th><th>Поступление</th><th>Себестоимость</th><th>Продажа / ожидание</th><th>Прибыль</th><th>Маржа</th><th>Дни</th><th>Ответственный</th><th>Действия</th></tr></thead><tbody id="productsBody"></tbody></table></div>
     </section>
 
@@ -267,6 +180,8 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
   </main>
 </div>
 
+<div class="modal" id="loginModal"><div class="modalbox"><h2>Вход в Mactopus ERP</h2><div class="formgrid"><div class="field"><label>Email</label><input class="input" id="loginEmail" type="email" autocomplete="email" inputmode="email"></div><div class="field"><label>Пароль</label><input class="input" id="loginPassword" type="password" autocomplete="current-password"></div><div class="field"><label>&nbsp;</label><button class="btn" id="loginBtn" type="button" style="width:100%">Войти</button></div></div><div id="loginMessage" class="alert" style="display:none;margin-top:12px"></div><div class="alert" style="margin-top:12px">Вход только для пользователей, созданных в Supabase → Authentication → Users. Если с телефона кнопка не срабатывает, открой сайт в Safari/Chrome, не во встроенном браузере Telegram/WhatsApp.</div><button class="btn secondary" onclick="closeModal('loginModal')" style="margin-top:12px">Закрыть</button></div></div>
+
 <div class="modal" id="productModal"><div class="modalbox"><h2 id="productModalTitle">Товар</h2><input type="hidden" id="productId"><div class="formgrid"><div class="field"><label>Название</label><input class="input" id="pName"></div><div class="field"><label>Категория</label><input class="input" id="pCategory" placeholder="iPhone / AirPods / Mac"></div><div class="field"><label>Цвет</label><input class="input" id="pColor" placeholder="Midnight / Silver / Black"></div><div class="field"><label>Себестоимость за 1 шт.</label><input class="input" id="pCost" type="number"></div><div class="field"><label>Плановая цена продажи за 1 шт.</label><input class="input" id="pPlan" type="number"></div><div class="field" id="pQuantityField"><label>Количество, шт.</label><input class="input" id="pQuantity" type="number" min="1" step="1" value="1"></div><div class="field"><label>Дата закупки</label><input class="input" id="pPurchaseDate" type="date"></div><div class="field"><label>Дата поступления</label><input class="input" id="pArrivalDate" type="date"></div><div class="field"><label>Поставщик / источник</label><input class="input" id="pSource"></div><div class="field"><label>Закупка / партия</label><select class="select" id="pPurchaseId"><option value="">Без закупки</option></select></div><div class="field"><label>Ответственный</label><input class="input" id="pOwner"></div><div class="field"><label>Комментарий</label><input class="input" id="pComment"></div></div><div class="row" style="margin-top:14px"><button class="btn green" id="saveProductBtn">Сохранить</button><button class="btn secondary" onclick="closeModal('productModal')">Закрыть</button></div></div></div>
 
 <div class="modal" id="saleModal"><div class="modalbox"><h2>Продажа товара</h2><input type="hidden" id="saleProductId"><div class="formgrid"><div class="field"><label>Цена продажи</label><input class="input" id="salePrice" type="number"></div><div class="field"><label>Дата продажи</label><input class="input" id="saleDate" type="date"></div><div class="field"><label>Кто продал</label><input class="input" id="soldBy"></div></div><div class="row" style="margin-top:14px"><button class="btn green" id="confirmSaleBtn">Провести продажу</button><button class="btn secondary" onclick="closeModal('saleModal')">Закрыть</button></div></div></div>
@@ -305,7 +220,6 @@ create table if not exists public.products (
   created_by text,
   sold_by text,
   purchase_id uuid,
-  bundle_id text,
   comment text,
   archived boolean not null default false,
   created_at timestamptz not null default now(),
@@ -324,7 +238,6 @@ create table if not exists public.purchases (
 );
 
 alter table public.products add column if not exists purchase_id uuid;
-alter table public.products add column if not exists bundle_id text;
 
 create table if not exists public.finance (
   id uuid primary key default gen_random_uuid(),
@@ -376,7 +289,24 @@ let cfg = JSON.parse(localStorage.getItem('mactopus_supabase_config')||'{}');
 if(!cfg.url || !cfg.key){ cfg = {url: DEFAULT_SUPABASE_URL, key: DEFAULT_SUPABASE_ANON_KEY}; localStorage.setItem('mactopus_supabase_config', JSON.stringify(cfg)); }
 document.getElementById('supabaseUrl').value = cfg.url || '';
 document.getElementById('supabaseKey').value = cfg.key || '';
-function initClient(){ if(cfg.url && cfg.key && window.supabase){ supabaseClient = window.supabase.createClient(cfg.url,cfg.key); document.getElementById('modePill').textContent='WEB Supabase'; } else { document.getElementById('modePill').textContent='DEMO local'; }}
+function initClient(){
+  if(cfg.url && cfg.key && window.supabase){
+    supabaseClient = window.supabase.createClient(cfg.url,cfg.key,{
+      auth:{
+        persistSession:true,
+        autoRefreshToken:true,
+        detectSessionInUrl:true,
+        storageKey:'mactopus_erp_auth_v1'
+      },
+      global:{
+        headers:{'x-application-name':'mactopus-erp'}
+      }
+    });
+    document.getElementById('modePill').textContent='WEB Supabase';
+  } else {
+    document.getElementById('modePill').textContent='DEMO local';
+  }
+}
 const fmtRub = n => (Number(n)||0).toLocaleString('ru-RU')+' ₽';
 const pct = n => ((Number(n)||0)*100).toFixed(1)+'%';
 const today = () => new Date().toISOString().slice(0,10);
@@ -395,14 +325,14 @@ function margin(p){ return productStatus(p)==='Продан' && Number(p.cost)>0
 function expectedPayment(p){ return Number(p.delivery_expected_price || p.planned_sale_price || p.actual_sale_price || 0); }
 function deliveryDays(p){ return p.delivery_date ? Math.max(0, daysBetween(p.delivery_date)) : 0; }
 function deliveryRiskClass(days){ return days>10?'risk-red':(days>5?'risk-yellow':'risk-green'); }
-function snapshotProduct(p){ if(!p) return {}; return {name:p.name||'', category:p.category||'', color:p.color||'', bundle_id:p.bundle_id||'', cost:Number(p.cost||0), planned_sale_price:Number(p.planned_sale_price||0), actual_sale_price:Number(p.actual_sale_price||0), purchase_date:p.purchase_date||null, arrival_date:p.arrival_date||null, delivery_date:p.delivery_date||null, delivery_service:p.delivery_service||'', tracking_number:p.tracking_number||'', delivery_expected_price:Number(p.delivery_expected_price||0), buyer_contact:p.buyer_contact||'', payment_date:p.payment_date||null, sale_date:p.sale_date||null, status:productStatus(p), archived:!!p.archived}; }
+function snapshotProduct(p){ if(!p) return {}; return {name:p.name||'', category:p.category||'', color:p.color||'', cost:Number(p.cost||0), planned_sale_price:Number(p.planned_sale_price||0), actual_sale_price:Number(p.actual_sale_price||0), purchase_date:p.purchase_date||null, arrival_date:p.arrival_date||null, delivery_date:p.delivery_date||null, delivery_service:p.delivery_service||'', tracking_number:p.tracking_number||'', delivery_expected_price:Number(p.delivery_expected_price||0), buyer_contact:p.buyer_contact||'', payment_date:p.payment_date||null, sale_date:p.sale_date||null, status:productStatus(p), archived:!!p.archived}; }
 function diffText(before={}, after={}){
-  const labels={name:'Название',category:'Категория',color:'Цвет',bundle_id:'Комплект',cost:'Себестоимость',planned_sale_price:'План продажи',actual_sale_price:'Цена продажи',purchase_date:'Дата закупки',arrival_date:'Дата поступления',delivery_date:'Дата отправки',delivery_service:'Доставка',tracking_number:'Трек',delivery_expected_price:'Ожидаемая сумма',buyer_contact:'Покупатель',payment_date:'Дата оплаты',sale_date:'Дата продажи',status:'Статус',archived:'Архив'};
+  const labels={name:'Название',category:'Категория',color:'Цвет',cost:'Себестоимость',planned_sale_price:'План продажи',actual_sale_price:'Цена продажи',purchase_date:'Дата закупки',arrival_date:'Дата поступления',delivery_date:'Дата отправки',delivery_service:'Доставка',tracking_number:'Трек',delivery_expected_price:'Ожидаемая сумма',buyer_contact:'Покупатель',payment_date:'Дата оплаты',sale_date:'Дата продажи',status:'Статус',archived:'Архив'};
   return Object.keys(labels).filter(k=>String(before[k] ?? '')!==String(after[k] ?? '')).map(k=>`${labels[k]}: ${before[k] ?? '—'} → ${after[k] ?? '—'}`).join('; ');
 }
 function displayDays(p){ if(!p.arrival_date) return '—'; return daysBetween(p.arrival_date, p.sale_date || today()); }
-function openModal(id){ const el=document.getElementById(id); if(el) el.classList.add('show'); }
-function closeModal(id){ const el=document.getElementById(id); if(el) el.classList.remove('show'); }
+function openModal(id){ document.getElementById(id).classList.add('show'); }
+function closeModal(id){ document.getElementById(id).classList.remove('show'); }
 window.closeModal=closeModal;
 
 function setRealtimeStatus(text, kind='warn'){
@@ -467,7 +397,7 @@ async function loadData(opts={}){
     if(lg.error){ if(!opts.silent) alert('Ошибка загрузки log: '+lg.error.message); return; }
     state.products=pr.data||[]; state.purchases=pu.error?[]:(pu.data||[]); state.finance=fi.data||[]; state.logs=lg.data||[];
   } else {
-    state = JSON.parse(localStorage.getItem('mactopus_demo_state')||'null') || {products:[],purchases:[],finance:[],logs:[]};
+    state = JSON.parse(localStorage.getItem('mactopus_demo_state')||'null') || {products:[],finance:[],logs:[]};
   }
   renderAll();
 }
@@ -480,7 +410,7 @@ async function addFinance(row){
   const item={id:uid(),date:row.date||today(),type:row.type,amount:normalizeFinanceAmount(row.type, row.amount),product_id:row.product_id||null,user_name:currentName(),comment:row.comment||'',created_at:new Date().toISOString()};
   if(supabaseClient && sessionUser){ const {error}=await supabaseClient.from('finance').insert({date:item.date,type:item.type,amount:item.amount,product_id:item.product_id,user_name:item.user_name,comment:item.comment}); if(error) throw error; } else { state.finance.unshift(item); saveLocal(); }
 }
-function renderAll(){ renderDashboard(); renderProducts(); renderPurchases(); renderPurchaseSelect(); renderInventory(); renderFinance(); renderLog(); document.getElementById('userPill').textContent=sessionUser?.email||'Демо-пользователь'; document.getElementById('loginOpenBtn').style.display=sessionUser?'none':''; document.getElementById('logoutBtn').style.display=sessionUser?'':'none'; updateAuthUI(); }
+function renderAll(){ renderDashboard(); renderProducts(); renderPurchases(); renderPurchaseSelect(); renderInventory(); renderFinance(); renderLog(); document.getElementById('userPill').textContent=sessionUser?.email||'Демо-пользователь'; document.getElementById('loginOpenBtn').style.display=sessionUser?'none':''; document.getElementById('logoutBtn').style.display=sessionUser?'':'none'; }
 function renderDashboard(){
   const products=state.products||[], finance=state.finance||[];
   const purchases=state.purchases||[];
@@ -615,56 +545,14 @@ window.selectVisibleProducts=selectVisibleProducts;
 window.clearProductSelection=clearProductSelection;
 window.bulkSetColor=bulkSetColor;
 
-async function createBundle(){
-  const ids=[...selectedProductIds];
-  if(ids.length<2) return alert('Выбери минимум 2 товара для комплекта');
-  const items=(state.products||[]).filter(p=>ids.includes(p.id));
-  const bad=items.filter(p=>!['В продаже','В пути'].includes(productStatus(p)) || p.bundle_id);
-  if(bad.length) return alert('В комплект можно добавить только товары без комплекта в статусах «В продаже» или «В пути». Проверь выбранные позиции.');
-  const bundleId='B-'+new Date().toISOString().replace(/[-:TZ.]/g,'').slice(0,14);
-  if(!confirm('Собрать комплект из '+ids.length+' товаров?\n\nID комплекта: '+bundleId)) return;
-  if(supabaseClient&&sessionUser){
-    const {error}=await supabaseClient.from('products').update({bundle_id:bundleId,updated_at:new Date().toISOString()}).in('id',ids);
-    if(error) return alert('Ошибка сборки комплекта: '+error.message);
-    await addLog('Создан комплект', null, 'bundle_id: '+bundleId+'; товаров: '+ids.length);
-  } else {
-    state.products.forEach(p=>{ if(ids.includes(p.id)) p.bundle_id=bundleId; });
-    await addLog('Создан комплект', null, 'bundle_id: '+bundleId+'; товаров: '+ids.length);
-    saveLocal();
-  }
-  selectedProductIds.clear();
-  await loadData();
-}
-async function removeFromBundle(id){
-  const p=(state.products||[]).find(x=>x.id===id);
-  if(!p || !p.bundle_id) return alert('Товар не в комплекте');
-  const bundleId=p.bundle_id;
-  const bundleItems=(state.products||[]).filter(x=>x.bundle_id===bundleId);
-  if(!confirm('Разобрать комплект '+bundleId+'?\nТоваров в комплекте: '+bundleItems.length)) return;
-  const ids=bundleItems.map(x=>x.id);
-  if(supabaseClient&&sessionUser){
-    const {error}=await supabaseClient.from('products').update({bundle_id:null,updated_at:new Date().toISOString()}).in('id',ids);
-    if(error) return alert('Ошибка разбора комплекта: '+error.message);
-    await addLog('Разбор комплекта', null, 'bundle_id: '+bundleId+'; товаров: '+ids.length);
-  } else {
-    state.products.forEach(x=>{ if(ids.includes(x.id)) x.bundle_id=null; });
-    await addLog('Разбор комплекта', null, 'bundle_id: '+bundleId+'; товаров: '+ids.length);
-    saveLocal();
-  }
-  await loadData();
-}
-window.createBundle=createBundle;
-window.removeFromBundle=removeFromBundle;
-
 function actionButtonsForProduct(p, st){
   const id=p.id;
   return `<div class="actionRow">
     <button class="btn secondary" title="Редактировать" onclick="editProduct('${id}')">✏️</button>
     ${st==='В пути'?`<button class="btn yellow" onclick="markArrived('${id}')">📥 Поступил</button>`:''}
-    ${st==='В продаже'?`<button class="btn yellow" onclick="openDelivery('${id}')">🚚 Отправить</button><button class="btn green" onclick="openSale('${id}')">${p.bundle_id?'📦 Продать комплект':'💰 Продать'}</button>`:''}
+    ${st==='В продаже'?`<button class="btn yellow" onclick="openDelivery('${id}')">🚚 Отправить</button><button class="btn green" onclick="openSale('${id}')">💰 Продать</button>`:''}
     ${st==='В доставке'?`<button class="btn green" onclick="paymentReceived('${id}')">💵 Оплата</button><button class="btn secondary" onclick="returnFromDelivery('${id}')">↩️ Возврат</button>`:''}
     ${st==='Продан'?`<button class="btn danger" onclick="cancelSale('${id}')">↩️ Удалить продажу</button>`:''}
-    ${p.bundle_id && st!=='Продан' && st!=='Архив'?`<button class="btn secondary" onclick="removeFromBundle('${id}')">📦 Разобрать</button>`:''}
     ${st==='Архив'?`<button class="btn danger" onclick="deleteProduct('${id}')">🗑 Удалить навсегда</button>`:''}
     ${st!=='Архив' && st!=='Продан'?`<button class="btn danger" onclick="archiveProduct('${id}')">🗑 Архив</button>`:''}
   </div>`;
@@ -675,7 +563,7 @@ function renderProducts(){
   let arr=[...state.products]; 
   arr=arr.filter(p=>{
     const st=productStatus(p); 
-    const text=(p.name+' '+(p.category||'')+' '+(p.color||'')+' '+(p.owner||'')+' '+(p.buyer_contact||'')+' '+(p.tracking_number||'')+' '+(p.bundle_id||'')).toLowerCase(); 
+    const text=(p.name+' '+(p.category||'')+' '+(p.color||'')+' '+(p.owner||'')+' '+(p.buyer_contact||'')+' '+(p.tracking_number||'')).toLowerCase(); 
     if(q && !text.includes(q)) return false; 
     if(f==='all') return true; 
     if(f==='colorless') return !String(p.color||'').trim();
@@ -692,7 +580,7 @@ function renderProducts(){
     const saleValue=st==='Продан'?fmtRub(p.actual_sale_price):(st==='В доставке'?fmtRub(expectedPayment(p)):'—');
     const responsible=esc(p.sold_by||p.owner||p.created_by||'—');
     const checked = selectedProductIds.has(p.id) ? 'checked' : '';
-    return `<tr><td><input type="checkbox" ${checked} onchange="toggleProductSelection('${p.id}', this.checked)"></td><td>${String(p.id).slice(0,8)}</td><td><b>${esc(p.name)}</b><br><span class="hint">${esc(p.category||'')}${p.color ? ' · ' + esc(p.color) : ' · цвет не указан'}${p.bundle_id ? ' · 📦 ' + esc(p.bundle_id) : ''}</span>${deliveryInfo}</td><td><span class="status ${cls}">${st}</span></td><td>${p.purchase_date||'—'}</td><td>${p.arrival_date||'—'}</td><td>${fmtRub(p.cost)}</td><td>${saleValue}</td><td>${st==='Продан'?fmtRub(profit(p)):'—'}</td><td>${st==='Продан'?pct(margin(p)):'—'}</td><td class="${dcls}">${d}</td><td>${responsible}</td><td>${actionButtonsForProduct(p,st)}</td></tr>`
+    return `<tr><td><input type="checkbox" ${checked} onchange="toggleProductSelection('${p.id}', this.checked)"></td><td>${String(p.id).slice(0,8)}</td><td><b>${esc(p.name)}</b><br><span class="hint">${esc(p.category||'')}${p.color ? ' · ' + esc(p.color) : ' · цвет не указан'}</span>${deliveryInfo}</td><td><span class="status ${cls}">${st}</span></td><td>${p.purchase_date||'—'}</td><td>${p.arrival_date||'—'}</td><td>${fmtRub(p.cost)}</td><td>${saleValue}</td><td>${st==='Продан'?fmtRub(profit(p)):'—'}</td><td>${st==='Продан'?pct(margin(p)):'—'}</td><td class="${dcls}">${d}</td><td>${responsible}</td><td>${actionButtonsForProduct(p,st)}</td></tr>`
   }).join('') || '<tr><td colspan="13">Нет товаров</td></tr>'; 
   updateSelectedCount();
 }
@@ -975,24 +863,7 @@ async function archiveProduct(id){
   if(supabaseClient&&sessionUser){const {data,error}=await supabaseClient.from('products').update(patch).eq('id',id).is('sale_date',null).select().single(); if(error) return alert('Не удалось архивировать. Возможно, товар уже продан или изменён: '+error.message); await addLog('Архивирование товара',id,diffText(before, snapshotProduct(data)) || p.name);} else {p.archived=true; p.status='Архив'; saveLocal(); await addLog('Архивирование товара',id,diffText(before, snapshotProduct(p)) || p.name);}
   await loadData(); }
 function editProduct(id){const p=state.products.find(x=>x.id===id); productModalTitle.textContent='Редактировать товар'; productId.value=p.id; pName.value=p.name||''; pCategory.value=p.category||''; if(document.getElementById('pColor')) pColor.value=p.color||''; if(document.getElementById('pPurchaseId')) pPurchaseId.value=p.purchase_id||''; pCost.value=p.cost||0; pPlan.value=p.planned_sale_price||0; if(document.getElementById('pQuantity')) pQuantity.value=1; if(document.getElementById('pQuantityField')) pQuantityField.style.display='none'; pPurchaseDate.value=p.purchase_date||''; pArrivalDate.value=p.arrival_date||''; pSource.value=p.source||''; pOwner.value=p.owner||''; pComment.value=p.comment||''; openModal('productModal');}
-function openSale(id){
-  const p=state.products.find(x=>x.id===id);
-  if(!p) return alert('Товар не найден');
-  const st=productStatus(p);
-  if(st!=='В продаже' && st!=='В доставке') return alert('Продать можно только товар в продаже или в доставке');
-  if(p.sale_date||p.actual_sale_price) return alert('Этот товар уже отмечен как проданный');
-  let totalSuggested=Number(p.delivery_expected_price||p.planned_sale_price||0);
-  if(p.bundle_id){
-    const items=state.products.filter(x=>x.bundle_id===p.bundle_id && ['В продаже','В доставке'].includes(productStatus(x)) && !x.sale_date && !x.archived);
-    totalSuggested=items.reduce((sum,x)=>sum+Number(x.delivery_expected_price||x.planned_sale_price||0),0);
-    if(!totalSuggested) totalSuggested=items.reduce((sum,x)=>sum+Number(x.cost||0),0);
-  }
-  saleProductId.value=id;
-  salePrice.value=totalSuggested||'';
-  saleDate.value=today();
-  soldBy.value=currentName();
-  openModal('saleModal');
-}
+function openSale(id){const p=state.products.find(x=>x.id===id); if(!p) return alert('Товар не найден'); const st=productStatus(p); if(st!=='В продаже' && st!=='В доставке') return alert('Продать можно только товар в продаже или в доставке'); if(p.sale_date||p.actual_sale_price) return alert('Этот товар уже отмечен как проданный'); saleProductId.value=id; salePrice.value=p.delivery_expected_price||p.planned_sale_price||''; saleDate.value=today(); soldBy.value=currentName(); openModal('saleModal');}
 function openDelivery(id){
   const p=state.products.find(x=>x.id===id); 
   if(!p) return alert('Товар не найден'); 
@@ -1061,43 +932,23 @@ async function returnFromDelivery(id){
   await loadData();
 }
 async function confirmSale(){
-  const id=saleProductId.value; const totalPrice=Number(salePrice.value)||0;
-  if(totalPrice<=0) return alert('Цена продажи должна быть больше 0');
+  const id=saleProductId.value; const price=Number(salePrice.value)||0;
+  if(price<=0) return alert('Цена продажи должна быть больше 0');
   let p=state.products.find(p=>p.id===id);
   if(!p) return alert('Товар не найден');
   const st=productStatus(p);
   if(st!=='В продаже' && st!=='В доставке') return alert('Продажа отменена: товар уже не в статусе «В продаже/В доставке». Обнови данные.');
-  const bundleItems=p.bundle_id
-    ? state.products.filter(x=>x.bundle_id===p.bundle_id && ['В продаже','В доставке'].includes(productStatus(x)) && !x.sale_date && !x.archived)
-    : [p];
-  if(p.bundle_id && bundleItems.length<2) return alert('В комплекте недостаточно активных товаров. Проверь комплект или разбери его.');
-  if(p.bundle_id && !confirm('Продать комплект '+p.bundle_id+'?\nТоваров в комплекте: '+bundleItems.length+'\nСумма продажи: '+fmtRub(totalPrice))) return;
-  const saleDateValue=saleDate.value||today();
-  const totalCost=bundleItems.reduce((sum,x)=>sum+Number(x.cost||0),0);
-  const equal=totalPrice/bundleItems.length;
-  const patches=bundleItems.map(x=>{
-    const share=totalCost>0 ? (Number(x.cost||0)/totalCost) : (1/bundleItems.length);
-    const itemPrice=Math.round((totalCost>0 ? totalPrice*share : equal)*100)/100;
-    return {id:x.id, actual_sale_price:itemPrice, sale_date:saleDateValue, payment_date:saleDateValue, sold_by:soldBy.value||currentName(), status:'Продан', updated_at:new Date().toISOString()};
-  });
+  const before=snapshotProduct(p);
+  const row={actual_sale_price:price,sale_date:saleDate.value||today(),payment_date:saleDate.value||today(),sold_by:soldBy.value||currentName(),status:'Продан',updated_at:new Date().toISOString()};
   if(supabaseClient&&sessionUser){
-    for(const patch of patches){
-      const {id:patchId,...row}=patch;
-      const {error}=await supabaseClient.from('products').update(row).eq('id',patchId).is('sale_date',null).eq('archived',false);
-      if(error) return alert('Продажа не проведена полностью. Ошибка по товару '+patchId+': '+error.message);
-    }
-  } else {
-    patches.forEach(patch=>{ const item=state.products.find(x=>x.id===patch.id); if(item) Object.assign(item,patch); });
-    saveLocal();
-  }
-  await addFinance({type:'Продажа',amount:Math.abs(totalPrice),product_id:id,date:saleDateValue,comment:p.bundle_id?'Авто: продажа комплекта '+p.bundle_id:(st==='В доставке'?'Авто: оплата после доставки':'Авто: прямая продажа товара')});
-  if(p.bundle_id){
-    await addLog('Продажа комплекта',id,`bundle_id: ${p.bundle_id}; товаров: ${bundleItems.length}; сумма: ${fmtRub(totalPrice)}`);
-  } else {
-    await addLog(st==='В доставке'?'Оплата получена':'Продажа товара',id,fmtRub(totalPrice));
-  }
-  closeModal('saleModal'); await loadData();
-}
+    const query=supabaseClient.from('products').update(row).eq('id',id).is('sale_date',null).eq('archived',false);
+    const {data,error}=await query.select().single();
+    if(error) return alert('Продажа не проведена. Возможно, другой пользователь уже продал или изменил товар: '+error.message);
+    p=data;
+  } else {Object.assign(p,row); saveLocal();}
+  await addFinance({type:'Продажа',amount:Math.abs(price),product_id:id,date:row.sale_date,comment:st==='В доставке'?'Авто: оплата после доставки':'Авто: прямая продажа товара'});
+  await addLog(st==='В доставке'?'Оплата получена':'Продажа товара',id,diffText(before, snapshotProduct(p)) || fmtRub(price));
+  closeModal('saleModal'); await loadData();}
 async function cancelSale(id){
   const p=(state.products||[]).find(x=>x.id===id);
   if(!p) return alert('Товар не найден');
@@ -1215,19 +1066,6 @@ async function saveFinance(){
   await loadData();
 }
 window.editProduct=editProduct; window.openSale=openSale; window.openDelivery=openDelivery; window.paymentReceived=paymentReceived; window.returnFromDelivery=returnFromDelivery; window.markArrived=markArrived; window.archiveProduct=archiveProduct; window.cancelSale=cancelSale; window.deleteProduct=deleteProduct; window.deleteFinance=deleteFinance; window.editFinance=editFinance;
-function updateAuthUI(){
-  const screen=document.getElementById('loginScreen');
-  const app=document.getElementById('appRoot') || document.querySelector('.app');
-  if(sessionUser){
-    if(screen) screen.classList.add('is-hidden');
-    if(app) app.classList.remove('is-hidden');
-    document.body.classList.add('authed');
-  } else {
-    if(screen) screen.classList.remove('is-hidden');
-    if(app) app.classList.add('is-hidden');
-    document.body.classList.remove('authed');
-  }
-}
 async function authCheck(){
   if(!supabaseClient) return;
   try{
@@ -1251,10 +1089,52 @@ function showLoginMessage(text, kind='info'){
   box.style.borderColor = kind==='error' ? 'rgba(255,90,90,.45)' : 'rgba(91,140,255,.35)';
   box.style.background = kind==='error' ? 'rgba(255,90,90,.10)' : 'rgba(91,140,255,.10)';
 }
+
+function passwordLoginViaXhr(email,password){
+  return new Promise((resolve,reject)=>{
+    try{
+      const base=(cfg.url||'').replace(/\/$/,'');
+      const xhr=new XMLHttpRequest();
+      xhr.open('POST', base + '/auth/v1/token?grant_type=password', true);
+      xhr.setRequestHeader('Content-Type','application/json');
+      xhr.setRequestHeader('apikey', cfg.key||'');
+      xhr.setRequestHeader('Authorization','Bearer ' + (cfg.key||''));
+      xhr.onload=function(){
+        let payload=null;
+        try{ payload=JSON.parse(xhr.responseText||'{}'); }catch(e){}
+        if(xhr.status>=200 && xhr.status<300 && payload && payload.access_token){
+          resolve(payload);
+        } else {
+          const message = payload?.error_description || payload?.msg || payload?.message || ('HTTP '+xhr.status);
+          reject(new Error(message));
+        }
+      };
+      xhr.onerror=function(){ reject(new Error('XHR network error')); };
+      xhr.ontimeout=function(){ reject(new Error('XHR timeout')); };
+      xhr.timeout=20000;
+      xhr.send(JSON.stringify({email,password}));
+    }catch(e){ reject(e); }
+  });
+}
+
+async function completeLoginWithSession(data){
+  if(data?.access_token && data?.refresh_token){
+    const {error}=await supabaseClient.auth.setSession({
+      access_token:data.access_token,
+      refresh_token:data.refresh_token
+    });
+    if(error) throw error;
+  }
+  const userData = await supabaseClient.auth.getUser();
+  sessionUser = userData?.data?.user || data?.user || data?.session?.user || null;
+  showLoginMessage('Вход выполнен. Загружаю данные...');
+  closeModal('loginModal');
+  await authCheck();
+}
 async function handleLogin(){
   if(!supabaseClient){ showLoginMessage('Не подключён Supabase. Проверь настройки SUPABASE_URL и ANON_KEY.', 'error'); return; }
-  const email=(loginEmail.value||'').trim();
-  const password=loginPassword.value||'';
+  const email=(document.getElementById('loginEmail').value||'').trim();
+  const password=document.getElementById('loginPassword').value||'';
   if(!email||!password){ showLoginMessage('Укажи email и пароль.', 'error'); return; }
   const btn=document.getElementById('loginBtn');
   const oldText=btn.textContent;
@@ -1264,16 +1144,27 @@ async function handleLogin(){
   try{
     const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
     if(error) throw error;
-    sessionUser=data.user||data.session?.user||null;
-    showLoginMessage('Вход выполнен. Загружаю данные...');
-    await authCheck();
+    await completeLoginWithSession(data);
   }catch(err){
     console.error('login error', err);
     let msg = err?.message || String(err);
     const lower=msg.toLowerCase();
-    if(lower.includes('invalid login credentials')) msg='Неверный email или пароль. Проверь данные пользователя в Supabase → Authentication → Users.';
-    if(lower.includes('email not confirmed')) msg='Email не подтверждён. Либо подтверди почту, либо отключи Confirm email в Supabase → Authentication → Settings.';
-    if(lower.includes('failed to fetch') || lower.includes('network')) msg='Телефон не может подключиться к Supabase. Проверь интернет/VPN и открой сайт в Safari/Chrome.';
+    const looksLikeNetwork = lower.includes('load failed') || lower.includes('failed to fetch') || lower.includes('network') || lower.includes('fetch');
+    if(looksLikeNetwork){
+      try{
+        showLoginMessage('Основной вход не прошёл. Пробую резервный мобильный вход...');
+        const data=await passwordLoginViaXhr(email,password);
+        await completeLoginWithSession(data);
+        return;
+      }catch(fallbackErr){
+        console.error('fallback login error', fallbackErr);
+        msg = fallbackErr?.message || msg;
+      }
+    }
+    const lower2=String(msg).toLowerCase();
+    if(lower2.includes('invalid login credentials')) msg='Неверный email или пароль. Проверь данные пользователя в Supabase → Authentication → Users.';
+    else if(lower2.includes('email not confirmed')) msg='Email не подтверждён. Либо подтверди почту, либо отключи Confirm email в Supabase → Authentication → Settings.';
+    else if(looksLikeNetwork || lower2.includes('xhr network') || lower2.includes('timeout')) msg='Телефон не может выполнить запрос авторизации к Supabase. Попробуй Safari/Chrome, другую сеть или VPN. Supabase доступен, но auth-запрос блокируется сетью/браузером.';
     showLoginMessage(msg, 'error');
   }finally{
     btn.disabled=false;
@@ -1284,9 +1175,9 @@ loginBtn.addEventListener('click', handleLogin);
 loginPassword.addEventListener('keydown', e=>{ if(e.key==='Enter') handleLogin(); });
 loginEmail.addEventListener('keydown', e=>{ if(e.key==='Enter') loginPassword.focus(); });
 logoutBtn.onclick=async()=>{ stopRealtime(); if(supabaseClient) await supabaseClient.auth.signOut(); sessionUser=null; await loadData(); };
-loginOpenBtn.onclick=()=>{ sessionUser=null; updateAuthUI(); }; syncBtn.onclick=loadData; document.getElementById('addProductBtn').onclick=()=>{productModalTitle.textContent='Добавить товар'; ['productId','pName','pCategory','pColor','pCost','pPlan','pPurchaseDate','pArrivalDate','pSource','pOwner','pComment'].forEach(id=>{const el=document.getElementById(id); if(el) el.value='';}); if(document.getElementById('pPurchaseId')) pPurchaseId.value=''; if(document.getElementById('pQuantity')) pQuantity.value=1; if(document.getElementById('pQuantityField')) pQuantityField.style.display='block'; pPurchaseDate.value=today(); pOwner.value=currentName(); renderPurchaseSelect(); openModal('productModal');}; if(document.getElementById('addPurchaseBtn')) addPurchaseBtn.onclick=openNewPurchase; addFinanceBtn.onclick=openNewFinance; saveProductBtn.onclick=saveProduct; if(document.getElementById('savePurchaseBtn')) savePurchaseBtn.onclick=savePurchase; confirmSaleBtn.onclick=confirmSale; confirmDeliveryBtn.onclick=confirmDelivery; saveFinanceBtn.onclick=saveFinance; saveConfigBtn.onclick=()=>{localStorage.setItem('mactopus_supabase_config',JSON.stringify({url:supabaseUrl.value.trim(),key:supabaseKey.value.trim()})); alert('Настройки сохранены. Обнови страницу, после входа Realtime включится автоматически.');}; copySqlBtn.onclick=()=>navigator.clipboard.writeText(SQL).then(()=>alert('SQL скопирован')); search.oninput=renderProducts; statusFilter.onchange=renderProducts; financeFilter.onchange=renderFinance; if(document.getElementById('inventorySearch')) inventorySearch.oninput=renderInventory;
+loginOpenBtn.onclick=()=>openModal('loginModal'); syncBtn.onclick=loadData; document.getElementById('addProductBtn').onclick=()=>{productModalTitle.textContent='Добавить товар'; ['productId','pName','pCategory','pColor','pCost','pPlan','pPurchaseDate','pArrivalDate','pSource','pOwner','pComment'].forEach(id=>{const el=document.getElementById(id); if(el) el.value='';}); if(document.getElementById('pPurchaseId')) pPurchaseId.value=''; if(document.getElementById('pQuantity')) pQuantity.value=1; if(document.getElementById('pQuantityField')) pQuantityField.style.display='block'; pPurchaseDate.value=today(); pOwner.value=currentName(); renderPurchaseSelect(); openModal('productModal');}; if(document.getElementById('addPurchaseBtn')) addPurchaseBtn.onclick=openNewPurchase; addFinanceBtn.onclick=openNewFinance; saveProductBtn.onclick=saveProduct; if(document.getElementById('savePurchaseBtn')) savePurchaseBtn.onclick=savePurchase; confirmSaleBtn.onclick=confirmSale; confirmDeliveryBtn.onclick=confirmDelivery; saveFinanceBtn.onclick=saveFinance; saveConfigBtn.onclick=()=>{localStorage.setItem('mactopus_supabase_config',JSON.stringify({url:supabaseUrl.value.trim(),key:supabaseKey.value.trim()})); alert('Настройки сохранены. Обнови страницу, после входа Realtime включится автоматически.');}; copySqlBtn.onclick=()=>navigator.clipboard.writeText(SQL).then(()=>alert('SQL скопирован')); search.oninput=renderProducts; statusFilter.onchange=renderProducts; financeFilter.onchange=renderFinance; if(document.getElementById('inventorySearch')) inventorySearch.oninput=renderInventory;
 demoSeedBtn.onclick=()=>{state={products:[{id:uid(),name:'iPhone 15 Pro 256',category:'iPhone',cost:76000,planned_sale_price:89000,purchase_date:today(),arrival_date:today(),status:'В продаже',created_by:'demo'},{id:uid(),name:'AirPods Pro 2',category:'AirPods',cost:14500,planned_sale_price:18500,purchase_date:today(),arrival_date:null,status:'В пути',created_by:'demo'}],purchases:[{id:uid(),supplier:'demo',purchase_date:today(),arrival_date:today(),total_amount:90500,comment:'Демо закупка',created_at:new Date().toISOString()}],finance:[],logs:[]}; state.finance=[{id:uid(),type:'Закупка',amount:-76000,date:today(),product_id:state.products[0].id,user_name:'demo',comment:'Демо закупка',created_at:new Date().toISOString()},{id:uid(),type:'Закупка',amount:-14500,date:today(),product_id:state.products[1].id,user_name:'demo',comment:'Демо закупка',created_at:new Date().toISOString()},{id:uid(),type:'Инвестиция',amount:150000,date:today(),user_name:'demo',comment:'Старт',created_at:new Date().toISOString()}]; state.logs=[{id:uid(),action:'Загрузка демо',user_name:'demo',details:'Стартовые данные',created_at:new Date().toISOString()}]; saveLocal(); renderAll();};
-exportJsonBtn.onclick=()=>{const backup={exported_at:new Date().toISOString(),exported_by:currentName(),version:'5.5',...state}; const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='mactopus_backup_'+new Date().toISOString().slice(0,10)+'.json'; a.click();};
+exportJsonBtn.onclick=()=>{const backup={exported_at:new Date().toISOString(),exported_by:currentName(),version:'5.4.1',...state}; const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='mactopus_backup_'+new Date().toISOString().slice(0,10)+'.json'; a.click();};
 importJson.onchange=async(e)=>{const file=e.target.files[0]; if(!file) return; state=JSON.parse(await file.text()); saveLocal(); renderAll();};
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active')); b.classList.add('active'); document.querySelectorAll('.section').forEach(s=>s.classList.remove('active')); document.getElementById(b.dataset.tab).classList.add('active'); title.textContent=b.textContent.replace(/[📊📦💰🧾⚙️🏬]/g,'').trim();});
 initClient(); authCheck();
