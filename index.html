@@ -310,16 +310,16 @@ body.modal-open{overflow:hidden}
           <div class="loginBadge"><b>🚚 Доставка</b><span>Ожидание оплаты и контроль сроков</span></div>
         </div>
       </div>
-      <div class="loginFoot">Версия 6.0 Fast Sell · Cash Control · Mobile Stable</div>
+      <div class="loginFoot">Версия 6.2 Secure Login · Supabase Auth · Mobile Stable</div>
     </div>
     <div class="loginCard">
-      <h2>Вход по PIN</h2>
-      <div class="hint">Мобильный вход без Supabase Auth. При первом входе задай PIN, далее используй его на этом устройстве.</div>
-      <div class="field"><label>PIN-код</label><input class="input" id="loginPassword" type="password" inputmode="numeric" autocomplete="one-time-code" placeholder="Введите PIN"></div>
-      <div class="pinDots" id="pinDots"><span></span><span></span><span></span><span></span></div>
+      <h2>Защищённый вход</h2>
+      <div class="hint">Вход только для пользователей, созданных в Supabase Authentication. На телефоне используй VPN, если мобильная сеть блокирует Supabase.</div>
+      <div class="field"><label>Email</label><input class="input" id="loginEmail" type="email" autocomplete="email" inputmode="email" placeholder="name@example.com"></div>
+      <div class="field"><label>Пароль</label><input class="input" id="loginPassword" type="password" autocomplete="current-password" placeholder="••••••••"></div>
       <button class="btn" id="loginBtn" type="button">Войти</button>
       <div id="loginMessage" class="alert" style="display:none;margin-top:14px"></div>
-      <div class="loginFoot">PIN хранится только на устройстве. Supabase используется как база данных через anon key.</div>
+      <div class="loginFoot">PIN-доступ отключён. База закрыта для anon; читать и менять данные могут только авторизованные пользователи.</div>
     </div>
   </div>
 </div>
@@ -337,7 +337,7 @@ body.modal-open{overflow:hidden}
       <button data-tab="log">🧾 Журнал</button>
       <button data-tab="settings">⚙️ Настройки</button>
     </div>
-    <div class="footerNote">Realtime-версия: изменения подтягиваются без ручного обновления.<br><br><b style="color:#dbe7ff">5.6.4:</b> добавлены комплекты, мобильный PIN-вход и логотип Mactopus.</div>
+    <div class="footerNote">Realtime-версия: изменения подтягиваются без ручного обновления.<br><br><b style="color:#dbe7ff">6.2:</b> добавлены комплекты, защищённый вход и закрытый anon-доступ.</div>
   </aside>
   <main class="main">
     <div class="top">
@@ -567,23 +567,20 @@ alter table public.finance enable row level security;
 alter table public.activity_log enable row level security;
 
 -- Все авторизованные пользователи видят и меняют всё. Это подходит под вашу модель: все 3 пользователя админы.
+-- PIN/anon-доступ отключён: удаляем публичные политики и оставляем только authenticated.
+drop policy if exists "products_all_anon_pin" on public.products;
+drop policy if exists "purchases_all_anon_pin" on public.purchases;
+drop policy if exists "finance_all_anon_pin" on public.finance;
+drop policy if exists "log_all_anon_pin" on public.activity_log;
+
 drop policy if exists "products_all_auth" on public.products;
 create policy "products_all_auth" on public.products for all to authenticated using (true) with check (true);
--- Для PIN-доступа без Supabase Auth нужен anon-доступ:
-drop policy if exists "products_all_anon_pin" on public.products;
-create policy "products_all_anon_pin" on public.products for all to anon using (true) with check (true);
 drop policy if exists "purchases_all_auth" on public.purchases;
 create policy "purchases_all_auth" on public.purchases for all to authenticated using (true) with check (true);
-drop policy if exists "purchases_all_anon_pin" on public.purchases;
-create policy "purchases_all_anon_pin" on public.purchases for all to anon using (true) with check (true);
 drop policy if exists "finance_all_auth" on public.finance;
 create policy "finance_all_auth" on public.finance for all to authenticated using (true) with check (true);
-drop policy if exists "finance_all_anon_pin" on public.finance;
-create policy "finance_all_anon_pin" on public.finance for all to anon using (true) with check (true);
 drop policy if exists "log_all_auth" on public.activity_log;
 create policy "log_all_auth" on public.activity_log for all to authenticated using (true) with check (true);
-drop policy if exists "log_all_anon_pin" on public.activity_log;
-create policy "log_all_anon_pin" on public.activity_log for all to anon using (true) with check (true);
 `;
 
 document.getElementById('sqlBox').textContent = SQL;
@@ -600,7 +597,21 @@ let cfg = JSON.parse(localStorage.getItem('mactopus_supabase_config')||'{}');
 if(!cfg.url || !cfg.key){ cfg = {url: DEFAULT_SUPABASE_URL, key: DEFAULT_SUPABASE_ANON_KEY}; localStorage.setItem('mactopus_supabase_config', JSON.stringify(cfg)); }
 document.getElementById('supabaseUrl').value = cfg.url || '';
 document.getElementById('supabaseKey').value = cfg.key || '';
-function initClient(){ if(cfg.url && cfg.key && window.supabase){ supabaseClient = window.supabase.createClient(cfg.url, cfg.key); document.getElementById('modePill').textContent='WEB Supabase · PIN'; } else { document.getElementById('modePill').textContent='DEMO local'; }}
+function initClient(){
+  if(cfg.url && cfg.key && window.supabase){
+    supabaseClient = window.supabase.createClient(cfg.url, cfg.key, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        storage: window.localStorage
+      }
+    });
+    document.getElementById('modePill').textContent='WEB Supabase · Secure';
+  } else {
+    document.getElementById('modePill').textContent='DEMO local';
+  }
+}
 const fmtRub = n => (Number(n)||0).toLocaleString('ru-RU')+' ₽';
 const pct = n => ((Number(n)||0)*100).toFixed(1)+'%';
 const today = () => new Date().toISOString().slice(0,10);
@@ -706,7 +717,7 @@ async function loadData(opts={}){
   } catch(err){
     console.error('loadData failed', err);
     if(!opts.silent){
-      const msg='Ошибка загрузки данных: '+(err?.message||err)+'. Если используешь PIN-доступ, проверь VPN и anon/RLS-патч.';
+      const msg='Ошибка загрузки данных: '+(err?.message||err)+'. Проверь VPN/сеть и RLS-политики authenticated.';
       if(typeof showLoginMessage==='function' && !document.getElementById('loginScreen')?.classList.contains('is-hidden')) showLoginMessage(msg, 'error');
       else alert(msg);
     }
@@ -1520,27 +1531,26 @@ function updateAuthUI(){
     document.body.classList.remove('authed');
   }
 }
-function getPinHash(pin){
-  // Лёгкая локальная проверка PIN. Это не банковская защита, а удобный вход для личной ERP.
-  return btoa(unescape(encodeURIComponent('mactopus:'+String(pin||''))));
-}
-function pinIsSet(){ return !!localStorage.getItem('mactopus_pin_hash'); }
-function updatePinDots(){
-  const value=(document.getElementById('loginPassword')?.value||'');
-  document.querySelectorAll('#pinDots span').forEach((s,i)=>s.classList.toggle('on', i<Math.min(value.length,4)));
-}
 async function authCheck(){
-  const pinSession = localStorage.getItem('mactopus_pin_session') === 'ok';
-  if(pinSession){
-    sessionUser={email:'PIN-доступ'};
-    updateAuthUI();
-    startRealtime();
-    const ok = await loadData({silent:false});
-    if(!ok){ stopRealtime(); }
-  } else {
+  try{
+    if(!supabaseClient){ sessionUser=null; updateAuthUI(); return; }
+    const { data, error } = await supabaseClient.auth.getSession();
+    if(error) throw error;
+    if(data?.session?.user){
+      sessionUser = data.session.user;
+      updateAuthUI();
+      startRealtime();
+      await loadData({silent:false});
+    } else {
+      stopRealtime();
+      sessionUser=null;
+      updateAuthUI();
+    }
+  } catch(e){
     stopRealtime();
     sessionUser=null;
-    renderAll();
+    updateAuthUI();
+    showLoginMessage('Ошибка проверки сессии: '+(e?.message||e), 'error');
   }
 }
 function showLoginMessage(text, kind='info'){
@@ -1552,33 +1562,21 @@ function showLoginMessage(text, kind='info'){
   box.style.background = kind==='error' ? 'rgba(255,90,90,.10)' : 'rgba(91,140,255,.10)';
 }
 async function handleLogin(){
-  const pin=(document.getElementById('loginPassword')?.value||'').trim();
-  if(pin.length < 4){ showLoginMessage('PIN должен быть минимум 4 символа.', 'error'); return; }
+  const email=(document.getElementById('loginEmail')?.value||'').trim();
+  const password=(document.getElementById('loginPassword')?.value||'').trim();
+  if(!email || !password){ showLoginMessage('Введи email и пароль.', 'error'); return; }
   const btn=document.getElementById('loginBtn');
   const oldText=btn.textContent;
   btn.disabled=true; btn.textContent='Входим...';
   try{
-    const hash=getPinHash(pin);
-    if(!pinIsSet()){
-      if(!confirm('PIN ещё не задан. Сохранить этот PIN для входа на этом устройстве?')) return;
-      localStorage.setItem('mactopus_pin_hash', hash);
-    } else if(localStorage.getItem('mactopus_pin_hash') !== hash){
-      showLoginMessage('Неверный PIN.', 'error');
-      return;
-    }
-    localStorage.setItem('mactopus_pin_session','ok');
-    sessionUser={email:'PIN-доступ'};
+    if(!supabaseClient) throw new Error('Supabase не подключён. Проверь настройки.');
+    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    if(error) throw error;
+    sessionUser = data.user;
     showLoginMessage('Вход выполнен. Загружаю данные...');
     updateAuthUI();
     startRealtime();
-    const ok = await loadData({silent:false});
-    if(!ok){
-      // Возвращаем экран входа, чтобы было понятно, что данные не загрузились.
-      stopRealtime();
-      sessionUser=null;
-      localStorage.removeItem('mactopus_pin_session');
-      updateAuthUI();
-    }
+    await loadData({silent:false});
   } catch(e){
     showLoginMessage('Ошибка входа: '+(e?.message||e), 'error');
   } finally {
@@ -1586,13 +1584,13 @@ async function handleLogin(){
   }
 }
 loginBtn.addEventListener('click', handleLogin);
-loginPassword.addEventListener('input', updatePinDots);
 loginPassword.addEventListener('keydown', e=>{ if(e.key==='Enter') handleLogin(); });
-logoutBtn.onclick=async()=>{ stopRealtime(); localStorage.removeItem('mactopus_pin_session'); sessionUser=null; await loadData(); };
-loginOpenBtn.onclick=()=>{ localStorage.removeItem('mactopus_pin_session'); sessionUser=null; updateAuthUI(); };
+const loginEmailEl=document.getElementById('loginEmail'); if(loginEmailEl) loginEmailEl.addEventListener('keydown', e=>{ if(e.key==='Enter') handleLogin(); });
+logoutBtn.onclick=async()=>{ stopRealtime(); if(supabaseClient) await supabaseClient.auth.signOut(); sessionUser=null; updateAuthUI(); };
+loginOpenBtn.onclick=()=>{ sessionUser=null; updateAuthUI(); };
  syncBtn.onclick=loadData; document.getElementById('addProductBtn').onclick=()=>{productModalTitle.textContent='Добавить товар'; ['productId','pName','pCategory','pColor','pCost','pPlan','pPurchaseDate','pArrivalDate','pSource','pOwner','pComment'].forEach(id=>{const el=document.getElementById(id); if(el) el.value='';}); if(document.getElementById('pPurchaseId')) pPurchaseId.value=''; if(document.getElementById('pQuantity')) pQuantity.value=1; if(document.getElementById('pQuantityField')) pQuantityField.style.display='block'; pPurchaseDate.value=today(); pOwner.value=currentName(); renderPurchaseSelect(); openModal('productModal');}; if(document.getElementById('addPurchaseBtn')) addPurchaseBtn.onclick=openNewPurchase; addFinanceBtn.onclick=openNewFinance; saveProductBtn.onclick=saveProduct; if(document.getElementById('savePurchaseBtn')) savePurchaseBtn.onclick=savePurchase; confirmSaleBtn.onclick=confirmSale; confirmDeliveryBtn.onclick=confirmDelivery; saveFinanceBtn.onclick=saveFinance; saveConfigBtn.onclick=()=>{localStorage.setItem('mactopus_supabase_config',JSON.stringify({url:supabaseUrl.value.trim(),key:supabaseKey.value.trim()})); alert('Настройки сохранены. Обнови страницу, после входа Realtime включится автоматически.');}; copySqlBtn.onclick=()=>navigator.clipboard.writeText(SQL).then(()=>alert('SQL скопирован')); search.oninput=renderProducts; statusFilter.onchange=renderProducts; financeFilter.onchange=renderFinance; if(document.getElementById('inventorySearch')) inventorySearch.oninput=renderInventory;
 demoSeedBtn.onclick=()=>{state={products:[{id:uid(),name:'iPhone 15 Pro 256',category:'iPhone',cost:76000,planned_sale_price:89000,purchase_date:today(),arrival_date:today(),status:'В продаже',created_by:'demo'},{id:uid(),name:'AirPods Pro 2',category:'AirPods',cost:14500,planned_sale_price:18500,purchase_date:today(),arrival_date:null,status:'В пути',created_by:'demo'}],purchases:[{id:uid(),supplier:'demo',purchase_date:today(),arrival_date:today(),total_amount:90500,comment:'Демо закупка',created_at:new Date().toISOString()}],finance:[],logs:[]}; state.finance=[{id:uid(),type:'Закупка',amount:-76000,date:today(),product_id:state.products[0].id,user_name:'demo',comment:'Демо закупка',created_at:new Date().toISOString()},{id:uid(),type:'Закупка',amount:-14500,date:today(),product_id:state.products[1].id,user_name:'demo',comment:'Демо закупка',created_at:new Date().toISOString()},{id:uid(),type:'Инвестиция',amount:150000,date:today(),user_name:'demo',comment:'Старт',created_at:new Date().toISOString()}]; state.logs=[{id:uid(),action:'Загрузка демо',user_name:'demo',details:'Стартовые данные',created_at:new Date().toISOString()}]; saveLocal(); renderAll();};
-exportJsonBtn.onclick=()=>{const backup={exported_at:new Date().toISOString(),exported_by:currentName(),version:'5.9-profit-bundle-control',...state}; const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='mactopus_backup_'+new Date().toISOString().slice(0,10)+'.json'; a.click();};
+exportJsonBtn.onclick=()=>{const backup={exported_at:new Date().toISOString(),exported_by:currentName(),version:'6.2-secure-login',...state}; const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='mactopus_backup_'+new Date().toISOString().slice(0,10)+'.json'; a.click();};
 importJson.onchange=async(e)=>{const file=e.target.files[0]; if(!file) return; state=JSON.parse(await file.text()); saveLocal(); renderAll();};
 
 function updateMobileFab(tab){
