@@ -979,7 +979,7 @@ function renderInventory(){
   document.getElementById('inventoryBody').innerHTML=rows.join('') || '<tr><td colspan="11">Нет товаров</td></tr>';
   const mobileBox=document.getElementById('inventoryMobileCards');
   if(mobileBox){
-    const cards=filtered.slice().sort((a,b)=>(b.stock-a.stock)||(b.delivery-a.delivery)||(b.profit-a.profit)).map(g=>{
+    const cards=groups.slice().sort((a,b)=>(b.stock-a.stock)||(b.delivery-a.delivery)||(b.profit-a.profit)).map(g=>{
       const color=g.stock<=0?'stock-zero':(g.stock<=2?'stock-low':'stock-ok');
       return `<div class="mobileInvCard">
         <div class="mobileInvTop"><div><div class="mobileInvName">${esc(g.name)}${g.color?' · '+esc(g.color):''}</div><div class="mobileInvCat">${esc(g.category)} · всего ${g.total} ед.</div></div><span class="status ${g.stock>0?'st-stock':'st-arch'}">${g.stock>0?'В наличии':'0 остаток'}</span></div>
