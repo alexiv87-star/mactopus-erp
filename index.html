@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Mactopus ERP 5.4 — Purchases Stable / Supabase</title>
+<title>Mactopus ERP 5.4.2 — Archive Delete / Supabase</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
@@ -47,7 +47,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
 <div class="app">
   <aside class="side">
     <div class="brand">Mactopus ERP</div>
-    <div class="sub">Версия 5.4 Purchases Stable/Supabase<br>3 пользователя, все с админским доступом. Полировка интерфейса: аккуратные KPI, статусы, таблицы, мобильная адаптация и сохранение всей текущей бизнес-логики.</div>
+    <div class="sub">Версия 5.4.2 Archive Delete/Supabase<br>3 пользователя, все с админским доступом. Полировка интерфейса: аккуратные KPI, статусы, таблицы, мобильная адаптация и сохранение всей текущей бизнес-логики.</div>
     <div class="nav">
       <button class="active" data-tab="dashboard">📊 Дашборд</button>
       <button data-tab="products">📦 Товары</button>
@@ -57,7 +57,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
       <button data-tab="log">🧾 Журнал</button>
       <button data-tab="settings">⚙️ Настройки</button>
     </div>
-    <div class="footerNote">Realtime-версия: изменения подтягиваются без ручного обновления.<br><br><b style="color:#dbe7ff">5.4:</b> закупки вынесены в отдельный раздел. Товары больше не создают закупку автоматически.</div>
+    <div class="footerNote">Realtime-версия: изменения подтягиваются без ручного обновления.<br><br><b style="color:#dbe7ff">5.4.2:</b> закупки вынесены в отдельный раздел, Cash учитывает продажи, добавлено удаление товаров из архива.</div>
   </aside>
   <main class="main">
     <div class="top">
@@ -102,6 +102,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
         <button class="btn secondary" onclick="quickFilter('Продан')">Продано</button>
         <button class="btn secondary" onclick="quickFilter('stuck')">Зависло</button>
         <button class="btn secondary" onclick="quickFilter('lowmargin')">Маржа &lt; 15%</button>
+        <button class="btn secondary" onclick="quickFilter('Архив')">Архив</button>
       </div>
       <div class="toolbar"><div class="row"><input class="input" id="search" placeholder="Поиск: модель, категория, цвет, покупатель, трек" style="width:320px"><select class="select" id="statusFilter" style="width:210px"><option value="all">Все статусы</option><option>В пути</option><option>В продаже</option><option>В доставке</option><option>Продан</option><option>Архив</option><option value="colorless">Без цвета</option><option value="stuck">Зависло > 30 дней</option><option value="lowmargin">Маржа < 15%</option></select></div><div class="hint">Добавление товара — через верхнюю кнопку.</div></div>
       <div class="card" style="margin-bottom:14px;padding:14px"><div class="row" style="justify-content:space-between"><div class="hint">Выбрано товаров: <b id="selectedCount">0</b>. Для старых импортированных позиций можно быстро назначить цвет пачкой.</div><div class="row"><button class="btn secondary" onclick="selectVisibleProducts()">Выбрать видимые</button><button class="btn yellow" onclick="bulkSetColor()">🎨 Назначить цвет</button><button class="btn secondary" onclick="clearProductSelection()">Снять выбор</button></div></div></div>
@@ -535,6 +536,7 @@ function actionButtonsForProduct(p, st){
     ${st==='В продаже'?`<button class="btn yellow" onclick="openDelivery('${id}')">🚚 Отправить</button><button class="btn green" onclick="openSale('${id}')">💰 Продать</button>`:''}
     ${st==='В доставке'?`<button class="btn green" onclick="paymentReceived('${id}')">💵 Оплата</button><button class="btn secondary" onclick="returnFromDelivery('${id}')">↩️ Возврат</button>`:''}
     ${st==='Продан'?`<button class="btn danger" onclick="cancelSale('${id}')">↩️ Удалить продажу</button>`:''}
+    ${st==='Архив'?`<button class="btn danger" onclick="deleteProduct('${id}')">🗑 Удалить навсегда</button>`:''}
     ${st!=='Архив' && st!=='Продан'?`<button class="btn danger" onclick="archiveProduct('${id}')">🗑 Архив</button>`:''}
   </div>`;
 }
@@ -972,7 +974,8 @@ async function deleteFinance(id){
 async function deleteProduct(id){
   const p=(state.products||[]).find(x=>x.id===id);
   if(!p) return alert('Товар не найден');
-  if(!confirm('Удалить товар «'+p.name+'»? Будут удалены связанные финоперации и записи журнала.')) return;
+  if(productStatus(p)!=='Архив') return alert('Удалять навсегда можно только товары из архива. Сначала перенеси товар в архив.');
+  if(!confirm('Удалить товар «'+p.name+'» навсегда? Будут удалены связанные финоперации и записи журнала.')) return;
   if(!confirm('Подтверди удаление ещё раз. Действие нельзя отменить.')) return;
   if(supabaseClient&&sessionUser){
     await supabaseClient.from('finance').delete().eq('product_id',id);
