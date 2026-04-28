@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Mactopus ERP 5.7.1 — Mobile Fix / Supabase</title>
+<title>Mactopus ERP 5.7.2 — Mobile Fix / Supabase</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
@@ -216,43 +216,63 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
 
 
 
-/* === 5.7.1 Final mobile fixes: logo, modals, mobile inventory === */
+/* ===== 5.7.2 REAL MOBILE FIX: logo, modal buttons, inventory cards ===== */
+:root{--dockH:92px;}
 .loginLogoWrap.finalBrandWrap{
-  display:flex!important;align-items:center!important;gap:14px!important;margin:0 0 22px!important;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important;
+  display:flex!important;align-items:center!important;gap:14px!important;margin:0 0 20px!important;padding:0!important;
+  background:transparent!important;border:0!important;box-shadow:none!important;
 }
-.loginLogoWrap.finalBrandWrap .logoImg{
-  width:72px!important;height:72px!important;min-width:72px!important;max-width:72px!important;object-fit:contain!important;
-  background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.025))!important;border:1px solid rgba(255,255,255,.12)!important;
-  border-radius:22px!important;padding:8px!important;box-shadow:0 18px 44px rgba(0,0,0,.26), inset 0 1px 0 rgba(255,255,255,.09)!important;filter:none!important;
+.loginLogoWrap.finalBrandWrap .logoImg,
+.brandWithLogo .sideLogo{
+  object-fit:contain!important;background:radial-gradient(circle at 28% 20%,rgba(90,200,250,.20),rgba(191,90,242,.10) 55%,rgba(255,255,255,.03))!important;
+  border:1px solid rgba(255,255,255,.12)!important;box-shadow:0 14px 34px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.08)!important;
+  filter:none!important;
 }
+.loginLogoWrap.finalBrandWrap .logoImg{width:70px!important;height:70px!important;min-width:70px!important;max-width:70px!important;border-radius:22px!important;padding:7px!important;}
 .loginLogoWrap.finalBrandWrap .loginLogo{font-size:36px!important;line-height:1.02!important;font-weight:950!important;letter-spacing:-.8px!important;margin:0!important;}
 .loginLogoWrap.finalBrandWrap .loginLogo:after{display:none!important;}
-.brandWithLogo .sideLogo{width:42px!important;height:42px!important;min-width:42px!important;object-fit:contain!important;border-radius:14px!important;padding:5px!important;background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.025))!important;border:1px solid rgba(255,255,255,.12)!important;box-shadow:0 12px 28px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.08)!important;}
-.brandWithLogo span{font-weight:950!important;letter-spacing:-.25px!important;}
-body.modal-open .mobileDock, body.modal-open .mobileFab{display:none!important;}
-@media(max-width:720px){
-  .modal.show{align-items:flex-end!important;padding:8px!important;padding-bottom:calc(8px + env(safe-area-inset-bottom))!important;}
-  .modalbox{max-height:calc(100dvh - 18px)!important;overflow:auto!important;padding:16px!important;padding-bottom:calc(18px + env(safe-area-inset-bottom))!important;border-radius:24px 24px 18px 18px!important;}
-  .modalbox > .row:last-child{position:sticky;bottom:0;z-index:4;margin:14px -16px -16px!important;padding:12px 16px calc(14px + env(safe-area-inset-bottom))!important;background:linear-gradient(180deg,rgba(15,21,32,.72),rgba(15,21,32,.98));border-top:1px solid rgba(255,255,255,.08);backdrop-filter:blur(14px);}
-  .modalbox > .row:last-child .btn{flex:1 1 150px;width:auto!important;min-height:48px;}
-  .loginLogoWrap.finalBrandWrap{gap:12px!important;margin-bottom:16px!important;}
-  .loginLogoWrap.finalBrandWrap .logoImg{width:58px!important;height:58px!important;min-width:58px!important;max-width:58px!important;border-radius:18px!important;padding:7px!important;}
-  .loginLogoWrap.finalBrandWrap .loginLogo{font-size:29px!important;}
-  .brandWithLogo .sideLogo{width:36px!important;height:36px!important;min-width:36px!important;border-radius:12px!important;padding:4px!important;}
-  #inventory .inventory-summary-table{display:none!important;}
-  .mobileInventoryCards{display:grid!important;gap:10px;margin-top:10px;}
-}
+.brandLine{width:70px;height:5px;border-radius:999px;background:linear-gradient(90deg,var(--blue),var(--violet));margin-top:12px;box-shadow:0 0 24px rgba(90,200,250,.25);}
+.brandWithLogo{display:flex!important;align-items:center!important;gap:12px!important;}
+.brandWithLogo .sideLogo{width:42px!important;height:42px!important;min-width:42px!important;border-radius:14px!important;padding:5px!important;margin:0!important;}
+.brandWithLogo span{font-weight:950!important;letter-spacing:-.2px!important;}
+
+/* modal above mobile header/dock; hide dock/fab while any modal is open */
+.modal{z-index:1000!important;}
+body.modal-open .mobileDock, body.modal-open .mobileFab,
+body:has(.modal.show) .mobileDock, body:has(.modal.show) .mobileFab{display:none!important;visibility:hidden!important;pointer-events:none!important;}
+body.modal-open{overflow:hidden!important;}
+
 .mobileInventoryCards{display:none;}
 .invCard{border:1px solid rgba(255,255,255,.09);background:linear-gradient(180deg,rgba(25,34,50,.92),rgba(12,18,29,.94));border-radius:18px;padding:13px;box-shadow:0 12px 34px rgba(0,0,0,.24);}
 .invCardTop{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;}
 .invTitle{font-size:15px;font-weight:950;line-height:1.25;}
 .invSub{font-size:11px;color:var(--muted);margin-top:3px;}
 .invStockBadge{font-weight:950;border-radius:999px;padding:7px 10px;font-size:12px;white-space:nowrap;background:rgba(90,200,250,.12);border:1px solid rgba(90,200,250,.22);}
-.invStats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;}
-.invStat{border:1px solid rgba(255,255,255,.07);background:rgba(8,12,19,.36);border-radius:14px;padding:9px 8px;}
-.invStat span{display:block;color:var(--muted);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;}
-.invStat b{display:block;margin-top:4px;font-size:14px;}
-.invCard .btn{margin-top:10px;width:100%;min-height:42px;}
+.invStockBadge.ok{color:#9affb1;border-color:rgba(48,209,88,.28);background:rgba(48,209,88,.12)}
+.invStockBadge.low{color:#ffe07a;border-color:rgba(255,214,10,.28);background:rgba(255,214,10,.12)}
+.invStockBadge.zero{color:#ff8b84;border-color:rgba(255,69,58,.30);background:rgba(255,69,58,.12)}
+.invMetrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:11px;}
+.invMetric{border:1px solid rgba(255,255,255,.07);background:rgba(8,12,19,.34);border-radius:14px;padding:9px;}
+.invMetric span{display:block;color:var(--muted);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;}
+.invMetric b{display:block;font-size:14px;margin-top:4px;}
+.invActions{display:flex;gap:8px;margin-top:11px;}
+.invActions .btn{width:100%;}
+@media(max-width:720px){
+  body{padding-bottom:calc(var(--dockH) + env(safe-area-inset-bottom))!important;}
+  .loginLogoWrap.finalBrandWrap{gap:12px!important;margin-bottom:16px!important;}
+  .loginLogoWrap.finalBrandWrap .logoImg{width:58px!important;height:58px!important;min-width:58px!important;max-width:58px!important;border-radius:18px!important;padding:6px!important;}
+  .loginLogoWrap.finalBrandWrap .loginLogo{font-size:29px!important;}
+  .brandLine{width:56px;height:4px;margin-top:9px;}
+  .brandWithLogo .sideLogo{width:36px!important;height:36px!important;min-width:36px!important;border-radius:12px!important;padding:4px!important;}
+  .modal.show{display:flex!important;align-items:flex-end!important;justify-content:center!important;padding:0!important;background:rgba(0,0,0,.72)!important;}
+  .modalbox{width:100%!important;max-width:100%!important;max-height:calc(100dvh - 8px)!important;overflow:auto!important;border-radius:24px 24px 0 0!important;padding:16px!important;padding-bottom:110px!important;box-shadow:0 -16px 70px rgba(0,0,0,.62)!important;}
+  .modalbox > .row:last-child{position:fixed!important;left:0!important;right:0!important;bottom:0!important;z-index:1100!important;margin:0!important;padding:12px 14px calc(14px + env(safe-area-inset-bottom))!important;background:linear-gradient(180deg,rgba(15,21,32,.82),rgba(15,21,32,.98));border-top:1px solid rgba(255,255,255,.10);backdrop-filter:blur(16px);display:flex!important;gap:10px!important;}
+  .modalbox > .row:last-child .btn{flex:1 1 0!important;width:auto!important;min-height:52px!important;font-size:15px!important;border-radius:16px!important;}
+  #inventory .inventory-summary-table{display:none!important;}
+  #mobileInventoryCards{display:grid!important;gap:10px;margin-top:10px;}
+  #inventory .toolbar{position:sticky;top:118px;z-index:30;background:rgba(8,12,19,.86);backdrop-filter:blur(14px);padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06);}
+}
+@media(max-width:390px){.invMetrics{grid-template-columns:1fr}.invActions{display:grid}.loginLogoWrap.finalBrandWrap .loginLogo{font-size:27px!important;}}
 
 </style>
 </head>
@@ -396,7 +416,7 @@ body.modal-open .mobileDock, body.modal-open .mobileFab{display:none!important;}
           <h3 style="margin:0" id="inventoryTableTitle">Сводка по остаткам</h3>
           <input class="input" id="inventorySearch" placeholder="Поиск: категория или товар" style="max-width:320px">
         </div>
-        <div class="tablewrap inventory-summary-table"><table><thead><tr><th>Категория / товар</th><th>Остаток</th><th>В пути</th><th>В доставке</th><th>Продано</th><th>Всего</th><th>Себестоимость остатка</th><th>Ожидаем оплату</th><th>Выручка</th><th>Прибыль</th><th>Действие</th></tr></thead><tbody id="inventoryBody"></tbody></table></div><div id="inventoryCards" class="mobileInventoryCards"></div>
+        <div class="tablewrap inventory-summary-table"><table><thead><tr><th>Категория / товар</th><th>Остаток</th><th>В пути</th><th>В доставке</th><th>Продано</th><th>Всего</th><th>Себестоимость остатка</th><th>Ожидаем оплату</th><th>Выручка</th><th>Прибыль</th><th>Действие</th></tr></thead><tbody id="inventoryBody"></tbody></table></div><div id="mobileInventoryCards" class="mobileInventoryCards"></div>
       </div>
     </section>
 
@@ -972,25 +992,26 @@ function renderInventory(){
     }
   });
   rows.push('<tr class="summary-total"><td>Итого</td><td class="'+stockClass(total.stock)+'">'+total.stock+'</td><td>'+total.road+'</td><td>'+total.delivery+'</td><td class="risk-green">'+total.sold+'</td><td>'+total.total+'</td><td>'+fmtRub(total.stockCost)+'</td><td>'+fmtRub(total.expected)+'</td><td>'+fmtRub(total.revenue)+'</td><td>'+fmtRub(total.profit)+'</td><td></td></tr>');
+  
   document.getElementById('inventoryBody').innerHTML=rows.join('') || '<tr><td colspan="11">Нет товаров</td></tr>';
-  const cardsEl=document.getElementById('inventoryCards');
-  if(cardsEl){
+  const mob=document.getElementById('mobileInventoryCards');
+  if(mob){
     const cards=groups.map(g=>{
-      const sc=g.stock===0?'stock-zero':(g.stock<=2?'stock-low':'stock-ok');
+      const badgeCls=g.stock===0?'zero':(g.stock<=2?'low':'ok');
       return `<div class="invCard">
-        <div class="invCardTop"><div><div class="invTitle">${esc(g.name)}</div><div class="invSub">${esc(g.category)}${g.color?' · '+esc(g.color):''}${g.stuck?' · зависло '+g.stuck:''}</div></div><div class="invStockBadge ${sc}">Остаток: ${g.stock}</div></div>
-        <div class="invStats">
-          <div class="invStat"><span>В пути</span><b>${g.road}</b></div>
-          <div class="invStat"><span>Доставка</span><b>${g.delivery}</b></div>
-          <div class="invStat"><span>Продано</span><b>${g.sold}</b></div>
-          <div class="invStat"><span>Склад ₽</span><b>${fmtRub(g.stockCost)}</b></div>
-          <div class="invStat"><span>Ожидаем</span><b>${fmtRub(g.expected)}</b></div>
-          <div class="invStat"><span>Прибыль</span><b>${fmtRub(g.profit)}</b></div>
+        <div class="invCardTop"><div><div class="invTitle">${esc(g.name)}</div><div class="invSub">${esc(g.category||'Без категории')}${g.color?' · '+esc(g.color):''}${g.stuck?' · зависло '+g.stuck:''}</div></div><div class="invStockBadge ${badgeCls}">Остаток: ${g.stock}</div></div>
+        <div class="invMetrics">
+          <div class="invMetric"><span>В пути</span><b>${g.road}</b></div>
+          <div class="invMetric"><span>В доставке</span><b>${g.delivery}</b></div>
+          <div class="invMetric"><span>Продано</span><b>${g.sold}</b></div>
+          <div class="invMetric"><span>Себестоимость</span><b>${fmtRub(g.stockCost)}</b></div>
+          <div class="invMetric"><span>Ожидаем</span><b>${fmtRub(g.expected)}</b></div>
+          <div class="invMetric"><span>Прибыль</span><b>${fmtRub(g.profit)}</b></div>
         </div>
-        <button class="btn secondary" onclick="openInventoryUnits('${esc(g.name)}','${esc(g.category)}','${esc(g.color||'')}')">Открыть единицы</button>
+        <div class="invActions"><button class="btn secondary" onclick="openInventoryUnits('${esc(g.name)}','${esc(g.category)}','${esc(g.color||'')}')">Открыть единицы</button></div>
       </div>`;
     }).join('');
-    cardsEl.innerHTML=cards || '<div class="alert">Нет товаров</div>';
+    mob.innerHTML=cards || '<div class="alert">Нет товаров по выбранному фильтру</div>';
   }
 }
 function renderPurchases(){
